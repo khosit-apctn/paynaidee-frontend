@@ -167,24 +167,34 @@
     - Create `components/providers/i18n-provider.tsx` for context setup
     - _Requirements: 7.6_
 
-- [ ] 6. WebSocket Client
-  - [ ] 6.1 Implement WebSocket client class
+- [x] 6. WebSocket Client
+
+
+  - [x] 6.1 Implement WebSocket client class
+
+
     - Create `lib/websocket/client.ts` with PayNaiDeeWebSocket class
     - Implement connect, disconnect, reconnect with exponential backoff
     - Add message handlers registration (on/off pattern)
     - _Requirements: 2.1, 2.2_
 
-  - [ ] 6.2 Create WebSocket type definitions
+
+
+  - [x] 6.2 Create WebSocket type definitions
     - Create `lib/websocket/types.ts` with message type definitions
     - Define types for chat_message, typing, join_group, leave_group, payment_update, bill_settled
     - _Requirements: 2.3, 2.6, 2.9, 2.10, 6.4, 6.5_
 
-  - [ ] 6.3 Create WebSocket hooks
+
+  - [x] 6.3 Create WebSocket hooks
+
     - Create `lib/websocket/hooks.ts` with useWebSocket hook
     - Integrate with chat store for message updates
     - _Requirements: 2.4, 8.6_
 
-  - [ ] 6.4 Create WebSocket provider component
+
+  - [x] 6.4 Create WebSocket provider component
+
     - Create `components/providers/websocket-provider.tsx` for connection management
     - Handle auth token and auto-reconnect
     - _Requirements: 2.1, 2.2_
