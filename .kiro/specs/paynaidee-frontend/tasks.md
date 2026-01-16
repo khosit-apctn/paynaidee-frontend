@@ -199,30 +199,47 @@
     - Handle auth token and auto-reconnect
     - _Requirements: 2.1, 2.2_
 
-- [ ] 7. TanStack Query Setup and Hooks
-  - [ ] 7.1 Create Query provider
+- [x] 7. TanStack Query Setup and Hooks
+
+
+
+
+
+  - [x] 7.1 Create Query provider
+
+
     - Create `components/providers/query-provider.tsx` with QueryClient configuration
     - Configure default stale time, cache time, and retry settings
     - _Requirements: 8.1, 8.4_
 
-  - [ ] 7.2 Implement auth hooks
+  - [x] 7.2 Implement auth hooks
+
+
     - Create `lib/hooks/use-auth.ts` with useLogin, useRegister, useLogout mutations
     - _Requirements: 1.2, 1.4_
 
-  - [ ] 7.3 Implement groups hooks
+  - [x] 7.3 Implement groups hooks
+
+
     - Create `lib/hooks/use-groups.ts` with useGroups, useGroup, useCreateGroup, useGroupMembers hooks
     - Define query keys for cache management
     - _Requirements: 4.1, 4.3, 4.6, 4.9, 8.3_
 
-  - [ ] 7.4 Implement bills hooks
+  - [x] 7.4 Implement bills hooks
+
+
     - Create `lib/hooks/use-bills.ts` with useGroupBills, useBill, useCreateBill, useBillQR hooks
     - _Requirements: 5.5, 5.6, 5.7, 6.1, 6.2, 8.3_
 
-  - [ ] 7.5 Implement friends hooks
+  - [x] 7.5 Implement friends hooks
+
+
     - Create `lib/hooks/use-friends.ts` with useFriends, useFriendRequests, useSendFriendRequest hooks
     - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.6, 8.3_
 
-  - [ ] 7.6 Implement chat hooks
+  - [x] 7.6 Implement chat hooks
+
+
     - Create `lib/hooks/use-chat.ts` with useMessages (paginated), useSendMessage hooks
     - _Requirements: 2.3, 2.5, 8.3_
 
