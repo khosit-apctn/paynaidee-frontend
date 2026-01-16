@@ -19,66 +19,99 @@
     - Create component subdirectories: `ui/`, `forms/`, `chat/`, `bills/`, `groups/`, `friends/`, `layout/`, `providers/`
     - _Requirements: 8.1_
 
-- [ ] 2. Core Utilities and Types
-  - [ ] 2.1 Create TypeScript type definitions
+- [x] 2. Core Utilities and Types
+
+
+
+
+  - [x] 2.1 Create TypeScript type definitions
+
+
     - Create `types/models.ts` with User, Group, GroupMember, Message, Bill, BillParticipant, Friendship, QRCodeResponse interfaces
     - Create `types/api.ts` with APIResponse, PaginatedResponse, and request type interfaces
     - Create `types/websocket.ts` with WebSocket message type definitions
     - Update `types/index.ts` to export all types
     - _Requirements: 8.1_
 
-  - [ ] 2.2 Implement currency formatting utility
+
+  - [x] 2.2 Implement currency formatting utility
+
     - Create `lib/utils/currency.ts` with `formatThaiCurrency()` using Intl.NumberFormat for THB
     - Add `formatCompactCurrency()` for abbreviated amounts (K, M)
     - Write unit tests for currency formatting functions
     - _Requirements: 7.3_
 
-  - [ ] 2.3 Implement date/time formatting utility
+
+  - [x] 2.3 Implement date/time formatting utility
+
     - Create `lib/utils/date.ts` with Day.js configured for Asia/Bangkok timezone
     - Add `formatDate()`, `formatDateTime()`, `formatRelativeTime()`, `formatChatTime()` functions
     - Configure Day.js plugins (utc, timezone, relativeTime) and Thai locale
     - Write unit tests for date formatting functions
     - _Requirements: 7.4_
 
-  - [ ] 2.4 Create Zod validation schemas
+  - [x] 2.4 Create Zod validation schemas
+
+
     - Create `lib/utils/validation.ts` with loginSchema, registerSchema, createGroupSchema, createBillSchema
     - Export TypeScript types inferred from Zod schemas
     - _Requirements: 5.8, 8.1_
 
-- [ ] 3. API Client and Error Handling
-  - [ ] 3.1 Implement API client class
+- [x] 3. API Client and Error Handling
+
+
+
+
+
+  - [x] 3.1 Implement API client class
+
+
     - Create `lib/api/client.ts` with APIClient class supporting GET, POST, PUT, DELETE
     - Implement automatic JWT token injection from auth store
     - Add automatic token refresh on 401 responses
     - Create APIError class with code, message, and status
     - _Requirements: 1.5, 1.6, 8.1_
 
-  - [ ] 3.2 Create API error handling utilities
+
+  - [x] 3.2 Create API error handling utilities
+
     - Create `lib/api/errors.ts` with error code to i18n key mapping
     - Implement `getErrorMessage()` helper for localized error display
     - _Requirements: 7.5, 8.5_
 
-  - [ ] 3.3 Implement auth API endpoints
+
+  - [x] 3.3 Implement auth API endpoints
+
     - Create `lib/api/auth.ts` with login, register, refreshToken, logout functions
     - _Requirements: 1.1, 1.2, 1.4_
 
-  - [ ] 3.4 Implement users API endpoints
+  - [x] 3.4 Implement users API endpoints
+
+
     - Create `lib/api/users.ts` with getProfile, updateProfile, searchUsers functions
     - _Requirements: 3.1, 3.7_
 
-  - [ ] 3.5 Implement groups API endpoints
+
+  - [x] 3.5 Implement groups API endpoints
+
     - Create `lib/api/groups.ts` with CRUD operations for groups and members
     - _Requirements: 4.1, 4.3, 4.4, 4.5, 4.6, 4.8, 4.9_
 
-  - [ ] 3.6 Implement bills API endpoints
+
+  - [x] 3.6 Implement bills API endpoints
+
     - Create `lib/api/bills.ts` with CRUD operations for bills and participants
     - _Requirements: 5.5, 5.6, 5.7_
 
-  - [ ] 3.7 Implement messages API endpoints
+  - [x] 3.7 Implement messages API endpoints
+
+
     - Create `lib/api/messages.ts` with getMessages (paginated) function
     - _Requirements: 2.5_
 
-  - [ ] 3.8 Implement friends API endpoints
+
+  - [x] 3.8 Implement friends API endpoints
+
     - Create `lib/api/friends.ts` with friend request and friendship management functions
     - _Requirements: 3.2, 3.4, 3.5, 3.6_
 
