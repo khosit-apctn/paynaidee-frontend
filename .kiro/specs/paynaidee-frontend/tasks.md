@@ -115,36 +115,55 @@
     - Create `lib/api/friends.ts` with friend request and friendship management functions
     - _Requirements: 3.2, 3.4, 3.5, 3.6_
 
-- [ ] 4. State Management (Zustand Stores)
-  - [ ] 4.1 Implement auth store
+- [x] 4. State Management (Zustand Stores)
+
+
+
+
+  - [x] 4.1 Implement auth store
+
+
     - Create `lib/stores/auth-store.ts` with user, tokens, and auth state
     - Add persist middleware for secure storage
     - Export helper functions: getAccessToken, getRefreshToken, clearTokens
     - _Requirements: 1.2, 8.2, 8.7_
 
-  - [ ] 4.2 Implement chat store
+
+  - [x] 4.2 Implement chat store
+
     - Create `lib/stores/chat-store.ts` with messages Map and typing users
     - Add actions: addMessage, setMessages, prependMessages, setTyping, clearChat
     - _Requirements: 2.4, 2.7, 8.2, 8.6_
 
-  - [ ] 4.3 Implement UI store
+
+  - [x] 4.3 Implement UI store
+
     - Create `lib/stores/ui-store.ts` for global UI state (modals, toasts, sidebar)
     - _Requirements: 8.2_
 
-- [ ] 5. Internationalization (i18n)
-  - [ ] 5.1 Create i18n configuration and hook
+- [x] 5. Internationalization (i18n)
+
+
+  - [x] 5.1 Create i18n configuration and hook
+
+
     - Create `lib/i18n/config.ts` with locale definitions
     - Create `lib/i18n/use-translation.ts` Zustand store with locale and t() function
     - Add persist middleware for language preference
     - _Requirements: 7.6, 7.7_
 
-  - [ ] 5.2 Create translation files
+
+  - [x] 5.2 Create translation files
+
     - Create `lib/i18n/locales/en.json` with English translations
     - Create `lib/i18n/locales/th.json` with Thai translations
     - Include all UI text, error messages, and labels
     - _Requirements: 7.1, 7.2, 7.5_
 
-  - [ ] 5.3 Create i18n provider component
+
+  - [x] 5.3 Create i18n provider component
+
+
     - Create `components/providers/i18n-provider.tsx` for context setup
     - _Requirements: 7.6_
 
