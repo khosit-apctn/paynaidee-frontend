@@ -1,0 +1,1571 @@
+basePath: /api/v1
+definitions:
+  internal_controllers.AddMemberRequest:
+    properties:
+      role:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - role
+    - user_id
+    type: object
+  internal_controllers.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+    type: object
+  internal_controllers.CreateBillParticipantRequest:
+    properties:
+      amount:
+        description: Only required for custom split
+        type: number
+      user_id:
+        type: integer
+    required:
+    - user_id
+    type: object
+  internal_controllers.CreateBillRequest:
+    properties:
+      description:
+        type: string
+      participants:
+        items:
+          $ref: '#/definitions/internal_controllers.CreateBillParticipantRequest'
+        minItems: 1
+        type: array
+      qr_header:
+        type: string
+      service_charge:
+        type: number
+      split_type:
+        enum:
+        - equal
+        - custom
+        type: string
+      title:
+        type: string
+      total_amount:
+        type: number
+    required:
+    - participants
+    - split_type
+    - title
+    - total_amount
+    type: object
+  internal_controllers.CreateGroupRequest:
+    properties:
+      avatar:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  internal_controllers.FriendRequestRequest:
+    properties:
+      addressee_id:
+        type: integer
+    required:
+    - addressee_id
+    type: object
+  internal_controllers.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  internal_controllers.RefreshRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  internal_controllers.RegisterRequest:
+    properties:
+      display_name:
+        type: string
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      phone_number:
+        type: string
+      username:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  internal_controllers.SendMessageRequest:
+    properties:
+      content:
+        type: string
+      metadata:
+        type: string
+      type:
+        type: string
+    required:
+    - content
+    type: object
+  internal_controllers.UpdateGroupRequest:
+    properties:
+      avatar:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_controllers.UpdateMemberRoleRequest:
+    properties:
+      role:
+        type: string
+    required:
+    - role
+    type: object
+  internal_controllers.UpdatePaymentStatusRequest:
+    properties:
+      status:
+        enum:
+        - paid
+        - pending
+        type: string
+    required:
+    - status
+    type: object
+  internal_controllers.UpdateProfileRequest:
+    properties:
+      avatar:
+        type: string
+      display_name:
+        type: string
+    type: object
+  paynaidee-webapp_internal_models.Bill:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      creator:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      description:
+        type: string
+      group:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.Group'
+      group_id:
+        type: integer
+      id:
+        type: integer
+      participants:
+        items:
+          $ref: '#/definitions/paynaidee-webapp_internal_models.BillParticipant'
+        type: array
+      qr_header:
+        type: string
+      service_charge:
+        type: number
+      split_type:
+        description: equal, custom
+        type: string
+      status:
+        description: pending, settled
+        type: string
+      title:
+        type: string
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  paynaidee-webapp_internal_models.BillParticipant:
+    properties:
+      amount:
+        type: number
+      bill:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.Bill'
+      bill_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      paid_at:
+        type: string
+      payment_status:
+        description: pending, paid
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      user_id:
+        type: integer
+    type: object
+  paynaidee-webapp_internal_models.Friendship:
+    properties:
+      addressee:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      addressee_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      requester:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      requester_id:
+        type: integer
+      status:
+        description: pending, accepted, rejected
+        type: string
+      updated_at:
+        type: string
+    type: object
+  paynaidee-webapp_internal_models.Group:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      creator:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      id:
+        type: integer
+      members:
+        items:
+          $ref: '#/definitions/paynaidee-webapp_internal_models.GroupMember'
+        type: array
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  paynaidee-webapp_internal_models.GroupMember:
+    properties:
+      group:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.Group'
+      group_id:
+        type: integer
+      id:
+        type: integer
+      joined_at:
+        type: string
+      role:
+        description: admin, member
+        type: string
+      user:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      user_id:
+        type: integer
+    type: object
+  paynaidee-webapp_internal_models.Message:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      group:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.Group'
+      group_id:
+        type: integer
+      id:
+        type: integer
+      metadata:
+        description: JSON for additional data
+        type: string
+      sender:
+        $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+      sender_id:
+        type: integer
+      type:
+        description: text, bill, system
+        type: string
+    type: object
+  paynaidee-webapp_internal_models.User:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      phone_number:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  paynaidee-webapp_internal_response.APIResponse:
+    properties:
+      code:
+        type: string
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  paynaidee-webapp_internal_services.QRCodeResponse:
+    properties:
+      amount:
+        description: Amount in Thai Baht
+        type: number
+      bill_id:
+        description: Bill ID
+        type: integer
+      header:
+        description: Custom header text
+        type: string
+      identifier:
+        description: PromptPay identifier (phone/ID)
+        type: string
+      payee_user_id:
+        description: User ID of the payee
+        type: integer
+      qr_data:
+        description: EMV QR code data string
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@paynaidee.com
+    name: PayNaiDee API Support
+    url: https://github.com/paynaidee/support
+  description: PayNaiDee (เปย์ไหนดี) - Backend API service for expense sharing application
+    with real-time chat, bill splitting, and QR code payment generation.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: PayNaiDee API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and receive access and refresh tokens
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.AuthResponse'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      summary: User login
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user (client-side token invalidation)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logout successful
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      summary: User logout
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get new access and refresh tokens using a valid refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tokens refreshed successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.AuthResponse'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Invalid or expired refresh token
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account and receive authentication tokens
+      parameters:
+      - description: Registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_controllers.AuthResponse'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "409":
+          description: Username or email already exists
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      summary: Register a new user
+      tags:
+      - Authentication
+  /bills/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific bill with participants
+      parameters:
+      - description: Bill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Bill details retrieved
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Bill'
+              type: object
+        "400":
+          description: Invalid bill ID
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not a member of the bill's group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Bill not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get bill details
+      tags:
+      - Bills
+  /bills/{id}/participants/{userId}/payment:
+    put:
+      consumes:
+      - application/json
+      description: Update the payment status for a bill participant
+      parameters:
+      - description: Bill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Participant User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Payment status update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.UpdatePaymentStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment status updated
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Bill or participant not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update payment status
+      tags:
+      - Bills
+  /bills/{id}/participants/{userId}/qr:
+    get:
+      consumes:
+      - application/json
+      description: Generate a PromptPay QR code for a specific participant's amount
+      parameters:
+      - description: Bill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Participant User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Custom header text for QR code
+        in: query
+        name: header
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_services.QRCodeResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate QR code for participant
+      tags:
+      - QR
+  /bills/{id}/qr:
+    get:
+      consumes:
+      - application/json
+      description: Generate a PromptPay QR code for the full bill amount to the bill
+        creator
+      parameters:
+      - description: Bill ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Custom header text for QR code
+        in: query
+        name: header
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_services.QRCodeResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate QR code for full bill
+      tags:
+      - QR
+  /bills/ocr:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Process a bill image using OCR to extract bill data (placeholder
+        - not yet implemented)
+      parameters:
+      - description: Bill image file
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OCR processing result
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "501":
+          description: OCR processing not yet implemented
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Process bill image with OCR
+      tags:
+      - Bills
+  /groups:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all groups the authenticated user belongs to
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Groups retrieved
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's groups
+      tags:
+      - Groups
+    post:
+      consumes:
+      - application/json
+      description: Create a new group with the authenticated user as admin
+      parameters:
+      - description: Group creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.CreateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Group created
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Group'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new group
+      tags:
+      - Groups
+  /groups/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific group (member only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group details retrieved
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Group'
+              type: object
+        "400":
+          description: Invalid group ID
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not a member of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Group not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get group details
+      tags:
+      - Groups
+    put:
+      consumes:
+      - application/json
+      description: Update group name and avatar (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Group update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.UpdateGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Group updated
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Group'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not an admin of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Group not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update group
+      tags:
+      - Groups
+  /groups/{id}/bills:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated list of bills for a group
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 20
+        description: Maximum number of bills
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Number of bills to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Bills retrieved
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid group ID
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not a member of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get group bills
+      tags:
+      - Bills
+    post:
+      consumes:
+      - application/json
+      description: Create a new bill with participants and split calculation
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bill creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.CreateBillRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Bill created
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Bill'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not a member of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a bill
+      tags:
+      - Bills
+  /groups/{id}/members:
+    post:
+      consumes:
+      - application/json
+      description: Add a new member to the group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Member data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.AddMemberRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Member added
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not an admin of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "409":
+          description: User is already a member
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Add member to group
+      tags:
+      - Groups
+  /groups/{id}/members/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a member from the group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID of the member to remove
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Member removed
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not an admin of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Member not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove member from group
+      tags:
+      - Groups
+  /groups/{id}/members/{userId}/role:
+    put:
+      consumes:
+      - application/json
+      description: Update a member's role in the group (admin only)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID of the member
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Role update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.UpdateMemberRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Member role updated
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not an admin of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Member not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update member role
+      tags:
+      - Groups
+  /groups/{id}/messages:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated chat history for a group
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 50
+        description: Maximum number of messages
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Number of messages to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Messages retrieved
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "400":
+          description: Invalid group ID
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not a member of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Group not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get chat history
+      tags:
+      - Chat
+    post:
+      consumes:
+      - application/json
+      description: Send a message to a group (alternative to WebSocket)
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Message data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Message sent
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Message'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not a member of this group
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Send message
+      tags:
+      - Chat
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Check if the API and database are healthy
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is healthy
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Service is unhealthy
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      summary: Health check
+      tags:
+      - Health
+  /users/friends:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the authenticated user's friends list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Friends list retrieved
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get friends list
+      tags:
+      - Users
+  /users/friends/{id}/accept:
+    put:
+      consumes:
+      - application/json
+      description: Accept a pending friend request
+      parameters:
+      - description: Friendship ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Friend request accepted
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Friendship'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not authorized to accept this request
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Friendship not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Accept friend request
+      tags:
+      - Users
+  /users/friends/{id}/reject:
+    put:
+      consumes:
+      - application/json
+      description: Reject a pending friend request
+      parameters:
+      - description: Friendship ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Friend request rejected
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Friendship'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "403":
+          description: Not authorized to reject this request
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "404":
+          description: Friendship not found
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Reject friend request
+      tags:
+      - Users
+  /users/friends/request:
+    post:
+      consumes:
+      - application/json
+      description: Send a friend request to another user
+      parameters:
+      - description: Friend request data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.FriendRequestRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Friend request sent
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.Friendship'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "409":
+          description: Friendship already exists
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Send friend request
+      tags:
+      - Users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the authenticated user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update the authenticated user's display name and avatar
+      parameters:
+      - description: Profile update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_controllers.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/paynaidee-webapp_internal_models.User'
+              type: object
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update current user profile
+      tags:
+      - Users
+  /users/search:
+    get:
+      consumes:
+      - application/json
+      description: Search for users by username, email, or phone number
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 10
+        description: Maximum number of results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Number of results to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Search results
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/paynaidee-webapp_internal_response.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Search users
+      tags:
+      - Users
+  /ws:
+    get:
+      description: Establish a WebSocket connection for real-time messaging. The connection
+        requires JWT authentication via query parameter or header.
+      responses:
+        "101":
+          description: Switching Protocols - WebSocket connection established
+        "401":
+          description: Unauthorized - Invalid or missing JWT token
+        "500":
+          description: Failed to upgrade connection
+      security:
+      - BearerAuth: []
+      summary: WebSocket connection
+      tags:
+      - WebSocket
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,2054 @@
+openapi: 3.0.3
+info:
+  title: PayNaiDee API
+  description: |
+    PayNaiDee (เปย์ไหนดี) is a Go-based REST API service with WebSocket support for real-time communication.
+    This API supports a mobile-first expense sharing application with features including:
+    - User authentication with JWT and role-based permissions
+    - Real-time group chat via WebSocket
+    - Group management with role-based access control
+    - Bill splitting with multiple calculation methods
+    - QR code generation for PromptPay payments
+    - Payment status tracking
+    - Thai language and cultural preferences support
+    
+    ## Authentication
+    
+    Most endpoints require JWT authentication. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+    
+    ### Quick Start
+    
+    1. **Register** a new account:
+       ```bash
+       curl -X POST http://localhost:8080/api/v1/auth/register \
+         -H "Content-Type: application/json" \
+         -d '{"username":"johndoe","email":"john@example.com","password":"password123"}'
+       ```
+    
+    2. **Login** to get tokens:
+       ```bash
+       curl -X POST http://localhost:8080/api/v1/auth/login \
+         -H "Content-Type: application/json" \
+         -d '{"username":"johndoe","password":"password123"}'
+       ```
+    
+    3. **Use the access token** for authenticated requests:
+       ```bash
+       curl -X GET http://localhost:8080/api/v1/users/me \
+         -H "Authorization: Bearer <access_token>"
+       ```
+    
+    4. **Refresh tokens** when access token expires:
+       ```bash
+       curl -X POST http://localhost:8080/api/v1/auth/refresh \
+         -H "Content-Type: application/json" \
+         -d '{"refresh_token":"<refresh_token>"}'
+       ```
+    
+    ### Token Details
+    
+    | Token Type | Expiration | Purpose |
+    |------------|------------|---------|
+    | Access Token | 24 hours | API authentication |
+    | Refresh Token | 7 days | Obtain new access tokens |
+    
+    ### JWT Claims (Access Token)
+    
+    ```json
+    {
+      "user_id": 1,
+      "username": "johndoe",
+      "role": "user",
+      "exp": 1704067200,
+      "iat": 1703980800,
+      "nbf": 1703980800
+    }
+    ```
+    
+    For comprehensive authentication documentation, see [AUTHENTICATION.md](./AUTHENTICATION.md).
+    
+    ## Localization
+    
+    The API supports Thai and English responses. Set the Accept-Language header:
+    - `th` - Thai
+    - `en` - English (default)
+  version: 1.0.0
+  contact:
+    name: PayNaiDee Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.paynaidee.com
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Authentication
+    description: User authentication and token management
+  - name: Users
+    description: User profile and friend management
+  - name: Groups
+    description: Group management and membership
+  - name: Chat
+    description: Chat messaging (REST API)
+  - name: Bills
+    description: Bill creation and management
+  - name: QR
+    description: QR code generation for payments
+  - name: WebSocket
+    description: Real-time WebSocket communication
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API and database are healthy
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '500':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account and receive authentication tokens
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Username or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and receive access and refresh tokens
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get new access and refresh tokens using a valid refresh token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout user (client-side token invalidation)
+      operationId: logout
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /api/v1/users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user profile
+      description: Retrieve the authenticated user's profile information
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Users
+      summary: Update current user profile
+      description: Update the authenticated user's display name and avatar
+      operationId: updateProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/search:
+    get:
+      tags:
+        - Users
+      summary: Search users
+      description: Search for users by username, email, or phone number
+      operationId: searchUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          description: Search query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of results
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of results to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchUsersResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/friends:
+    get:
+      tags:
+        - Users
+      summary: Get friends list
+      description: Retrieve the authenticated user's friends list
+      operationId: getFriends
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Friends list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendsListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/friends/request:
+    post:
+      tags:
+        - Users
+      summary: Send friend request
+      description: Send a friend request to another user
+      operationId: sendFriendRequest
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequestRequest'
+      responses:
+        '201':
+          description: Friend request sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Friendship already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/friends/{id}/accept:
+    put:
+      tags:
+        - Users
+      summary: Accept friend request
+      description: Accept a pending friend request
+      operationId: acceptFriendRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Friendship ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Friend request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not authorized to accept this request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Friendship not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/friends/{id}/reject:
+    put:
+      tags:
+        - Users
+      summary: Reject friend request
+      description: Reject a pending friend request
+      operationId: rejectFriendRequest
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Friendship ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Friend request rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not authorized to reject this request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Friendship not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups:
+    get:
+      tags:
+        - Groups
+      summary: Get user's groups
+      description: Retrieve all groups the authenticated user belongs to
+      operationId: getUserGroups
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Groups retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupsListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Groups
+      summary: Create a new group
+      description: Create a new group with the authenticated user as admin
+      operationId: createGroup
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupRequest'
+      responses:
+        '201':
+          description: Group created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups/{id}:
+    get:
+      tags:
+        - Groups
+      summary: Get group details
+      description: Retrieve details of a specific group (member only)
+      operationId: getGroup
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Group details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Groups
+      summary: Update group
+      description: Update group name and avatar (admin only)
+      operationId: updateGroup
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGroupRequest'
+      responses:
+        '200':
+          description: Group updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not an admin of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups/{id}/members:
+    post:
+      tags:
+        - Groups
+      summary: Add member to group
+      description: Add a new member to the group (admin only)
+      operationId: addMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberRequest'
+      responses:
+        '201':
+          description: Member added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not an admin of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: User is already a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups/{id}/members/{userId}/role:
+    put:
+      tags:
+        - Groups
+      summary: Update member role
+      description: Update a member's role in the group (admin only)
+      operationId: updateMemberRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          description: User ID of the member
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRoleRequest'
+      responses:
+        '200':
+          description: Member role updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not an admin of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups/{id}/members/{userId}:
+    delete:
+      tags:
+        - Groups
+      summary: Remove member from group
+      description: Remove a member from the group (admin only)
+      operationId: removeMember
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          description: User ID of the member to remove
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Member removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not an admin of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups/{id}/messages:
+    get:
+      tags:
+        - Chat
+      summary: Get chat history
+      description: Retrieve paginated chat history for a group
+      operationId: getMessages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of messages
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of messages to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Messages retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessagesResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Group not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Chat
+      summary: Send message
+      description: Send a message to a group (alternative to WebSocket)
+      operationId: sendMessage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/groups/{id}/bills:
+    get:
+      tags:
+        - Bills
+      summary: Get group bills
+      description: Retrieve paginated list of bills for a group
+      operationId: getGroupBills
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of bills
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          description: Number of bills to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Bills retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillsListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Bills
+      summary: Create a bill
+      description: Create a new bill with participants and split calculation
+      operationId: createBill
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Group ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBillRequest'
+      responses:
+        '201':
+          description: Bill created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/bills/{id}:
+    get:
+      tags:
+        - Bills
+      summary: Get bill details
+      description: Retrieve details of a specific bill with participants
+      operationId: getBill
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Bill ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bill details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of the bill's group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Bill not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/bills/{id}/participants/{userId}/payment:
+    put:
+      tags:
+        - Bills
+      summary: Update payment status
+      description: Update the payment status for a bill participant
+      operationId: updatePaymentStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Bill ID
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          description: Participant User ID
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePaymentStatusRequest'
+      responses:
+        '200':
+          description: Payment status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Invalid status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Bill or participant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/bills/{id}/qr:
+    get:
+      tags:
+        - QR
+      summary: Generate QR code for bill
+      description: Generate a PromptPay QR code for the full bill amount
+      operationId: generateQRForBill
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Bill ID
+          required: true
+          schema:
+            type: integer
+        - name: header
+          in: query
+          description: Custom header text for QR code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: QR code generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRCodeResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of the bill's group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Bill not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/bills/{id}/participants/{userId}/qr:
+    get:
+      tags:
+        - QR
+      summary: Generate QR code for participant
+      description: Generate a PromptPay QR code for a specific participant's amount
+      operationId: generateQRForParticipant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: Bill ID
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          description: Participant User ID
+          required: true
+          schema:
+            type: integer
+        - name: header
+          in: query
+          description: Custom header text for QR code
+          schema:
+            type: string
+      responses:
+        '200':
+          description: QR code generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRCodeResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a participant in this bill
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Bill or participant not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/bills/ocr:
+    post:
+      tags:
+        - Bills
+      summary: Process bill image (OCR)
+      description: Process a bill image using OCR (placeholder for future implementation)
+      operationId: processBillOCR
+      security:
+        - bearerAuth: []
+      responses:
+        '501':
+          description: Not implemented
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ws:
+    get:
+      tags:
+        - WebSocket
+      summary: WebSocket connection
+      description: |
+        Establish a WebSocket connection for real-time messaging.
+        
+        ## Authentication
+        Pass the JWT token as a query parameter: `/ws?token=<access_token>`
+        
+        ## Message Types
+        
+        ### Client to Server
+        - `chat_message`: Send a chat message to a group
+        - `typing`: Send typing indicator
+        - `join_group`: Join a group chat room
+        - `leave_group`: Leave a group chat room
+        
+        ### Server to Client
+        - `chat_message`: Receive a chat message
+        - `typing`: Receive typing indicator
+        - `payment_status_update`: Payment status changed
+        - `bill_settled`: Bill fully settled
+        
+        ## Message Format
+        ```json
+        {
+          "type": "chat_message",
+          "payload": {
+            "group_id": 1,
+            "content": "Hello!",
+            "metadata": ""
+          }
+        }
+        ```
+      parameters:
+        - name: token
+          in: query
+          description: JWT access token
+          required: true
+          schema:
+            type: string
+      responses:
+        '101':
+          description: Switching Protocols (WebSocket upgrade)
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT Bearer Token Authentication
+        
+        Include the access token in the Authorization header:
+        ```
+        Authorization: Bearer <access_token>
+        ```
+        
+        ## Token Structure
+        
+        Access tokens contain the following claims:
+        - `user_id` (uint): Unique user identifier
+        - `username` (string): Username
+        - `role` (string): User role (user/admin)
+        - `exp` (int64): Expiration timestamp
+        - `iat` (int64): Issued at timestamp
+        - `nbf` (int64): Not before timestamp
+        
+        ## Token Lifecycle
+        
+        - **Access Token**: Valid for 24 hours (configurable)
+        - **Refresh Token**: Valid for 7 days
+        
+        ## Example Token (decoded payload)
+        ```json
+        {
+          "user_id": 1,
+          "username": "johndoe",
+          "role": "user",
+          "exp": 1704067200,
+          "iat": 1703980800,
+          "nbf": 1703980800
+        }
+        ```
+        
+        ## Obtaining Tokens
+        
+        1. Register: `POST /api/v1/auth/register`
+        2. Login: `POST /api/v1/auth/login`
+        3. Refresh: `POST /api/v1/auth/refresh`
+        
+        ## Error Codes
+        
+        - `UNAUTHORIZED`: Missing Authorization header
+        - `INVALID_TOKEN_FORMAT`: Header must start with "Bearer "
+        - `MISSING_TOKEN`: Token is empty
+        - `INVALID_TOKEN`: Token is malformed or invalid
+        - `EXPIRED_TOKEN`: Token has expired (use refresh token)
+        
+        For detailed documentation, see [AUTHENTICATION.md](./AUTHENTICATION.md)
+
+  schemas:
+    # Request Schemas
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        password:
+          type: string
+          minLength: 6
+          example: password123
+        phone_number:
+          type: string
+          example: "0812345678"
+        display_name:
+          type: string
+          example: John Doe
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: johndoe
+        password:
+          type: string
+          example: password123
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+          example: John Doe
+        avatar:
+          type: string
+          example: avatar.jpg
+
+    FriendRequestRequest:
+      type: object
+      required:
+        - addressee_id
+      properties:
+        addressee_id:
+          type: integer
+          example: 2
+
+    CreateGroupRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Team Lunch
+        avatar:
+          type: string
+          example: group-avatar.png
+
+    UpdateGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Updated Group Name
+        avatar:
+          type: string
+          example: new-avatar.png
+
+    AddMemberRequest:
+      type: object
+      required:
+        - user_id
+        - role
+      properties:
+        user_id:
+          type: integer
+          example: 3
+        role:
+          type: string
+          enum: [admin, member]
+          example: member
+
+    UpdateMemberRoleRequest:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          enum: [admin, member]
+          example: admin
+
+    SendMessageRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          example: Hello everyone!
+        type:
+          type: string
+          enum: [text, bill, system]
+          default: text
+        metadata:
+          type: string
+          description: JSON string for additional data
+          example: '{"bill_id": 123}'
+
+    CreateBillRequest:
+      type: object
+      required:
+        - title
+        - total_amount
+        - split_type
+        - participants
+      properties:
+        title:
+          type: string
+          example: Team Dinner
+        description:
+          type: string
+          example: Friday team dinner at restaurant
+        total_amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 1500.00
+        service_charge:
+          type: number
+          format: float
+          minimum: 0
+          example: 10.0
+          description: Service charge percentage
+        split_type:
+          type: string
+          enum: [equal, custom]
+          example: equal
+        qr_header:
+          type: string
+          example: Team Dinner Payment
+        participants:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BillParticipantRequest'
+
+    BillParticipantRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          format: float
+          description: Required for custom split
+          example: 500.00
+
+    UpdatePaymentStatusRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [paid, pending]
+          example: paid
+
+    # Response Schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation successful
+        code:
+          type: string
+          example: SUCCESS
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: An error occurred
+        code:
+          type: string
+          example: ERROR_CODE
+        details:
+          type: string
+          example: Additional error details
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Service is healthy
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+            database:
+              type: string
+              example: connected
+
+    AuthResponse:
+      type: object
+      description: |
+        Authentication response containing JWT tokens and user information.
+        
+        The access_token should be used in the Authorization header for authenticated requests.
+        The refresh_token should be stored securely and used to obtain new tokens when the access_token expires.
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login successful
+        data:
+          type: object
+          properties:
+            access_token:
+              type: string
+              description: |
+                JWT access token for API authentication. Valid for 24 hours.
+                Include in requests as: `Authorization: Bearer <access_token>`
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImpvaG5kb2UiLCJyb2xlIjoidXNlciIsImV4cCI6MTcwNDA2NzIwMCwiaWF0IjoxNzAzOTgwODAwLCJuYmYiOjE3MDM5ODA4MDB9.abc123signature"
+            refresh_token:
+              type: string
+              description: |
+                JWT refresh token for obtaining new access tokens. Valid for 7 days.
+                Use with POST /api/v1/auth/refresh when access_token expires.
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MDQ2NzIwMDAsImlhdCI6MTcwNDA2NzIwMCwibmJmIjoxNzA0MDY3MjAwfQ.xyz789signature"
+            user:
+              $ref: '#/components/schemas/User'
+
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/User'
+
+    SearchUsersResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            users:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+            limit:
+              type: integer
+              example: 10
+            offset:
+              type: integer
+              example: 0
+            page:
+              type: integer
+              example: 1
+
+    FriendsListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            friends:
+              type: array
+              items:
+                $ref: '#/components/schemas/User'
+
+    FriendshipResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Friendship'
+
+    GroupsListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            groups:
+              type: array
+              items:
+                $ref: '#/components/schemas/Group'
+
+    GroupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Group'
+
+    MessagesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/Message'
+            limit:
+              type: integer
+              example: 50
+            offset:
+              type: integer
+              example: 0
+            page:
+              type: integer
+              example: 1
+
+    MessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Message'
+
+    BillsListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            bills:
+              type: array
+              items:
+                $ref: '#/components/schemas/Bill'
+            limit:
+              type: integer
+              example: 20
+            offset:
+              type: integer
+              example: 0
+            page:
+              type: integer
+              example: 1
+
+    BillResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Bill'
+
+    QRCodeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            qr_data:
+              type: string
+              description: PromptPay QR code data string (EMV format)
+              example: "00020101021229370016A000000677010111011300668123456785303764540530058025863041234"
+            amount:
+              type: number
+              format: float
+              example: 500.00
+            identifier:
+              type: string
+              description: PromptPay identifier (phone or national ID)
+              example: "0812345678"
+            header:
+              type: string
+              example: Team Dinner Payment
+            bill_id:
+              type: integer
+              example: 1
+            payee_user_id:
+              type: integer
+              example: 1
+
+    # Data Models
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        phone_number:
+          type: string
+          example: "0812345678"
+        display_name:
+          type: string
+          example: John Doe
+        avatar:
+          type: string
+          example: avatar.jpg
+        role:
+          type: string
+          enum: [user, admin]
+          example: user
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Friendship:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        requester_id:
+          type: integer
+          example: 1
+        addressee_id:
+          type: integer
+          example: 2
+        status:
+          type: string
+          enum: [pending, accepted, rejected]
+          example: pending
+        requester:
+          $ref: '#/components/schemas/User'
+        addressee:
+          $ref: '#/components/schemas/User'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Team Lunch
+        avatar:
+          type: string
+          example: group-avatar.png
+        created_by:
+          type: integer
+          example: 1
+        creator:
+          $ref: '#/components/schemas/User'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMember'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    GroupMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        group_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        role:
+          type: string
+          enum: [admin, member]
+          example: admin
+        user:
+          $ref: '#/components/schemas/User'
+        joined_at:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        group_id:
+          type: integer
+          example: 1
+        sender_id:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Hello everyone!
+        type:
+          type: string
+          enum: [text, bill, system]
+          example: text
+        metadata:
+          type: string
+          description: JSON string for additional data
+          example: '{}'
+        sender:
+          $ref: '#/components/schemas/User'
+        created_at:
+          type: string
+          format: date-time
+
+    Bill:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        group_id:
+          type: integer
+          example: 1
+        created_by:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Team Dinner
+        description:
+          type: string
+          example: Friday team dinner
+        total_amount:
+          type: number
+          format: float
+          example: 1500.00
+        service_charge:
+          type: number
+          format: float
+          example: 10.0
+        split_type:
+          type: string
+          enum: [equal, custom]
+          example: equal
+        status:
+          type: string
+          enum: [pending, settled]
+          example: pending
+        qr_header:
+          type: string
+          example: Team Dinner Payment
+        creator:
+          $ref: '#/components/schemas/User'
+        group:
+          $ref: '#/components/schemas/Group'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillParticipant'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BillParticipant:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        bill_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          format: float
+          example: 500.00
+        payment_status:
+          type: string
+          enum: [pending, paid]
+          example: pending
+        user:
+          $ref: '#/components/schemas/User'
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # WebSocket Message Schemas
+    WSMessage:
+      type: object
+      required:
+        - type
+        - payload
+      properties:
+        type:
+          type: string
+          enum: [chat_message, typing, join_group, leave_group, payment_status_update, bill_settled]
+        payload:
+          type: object
+
+    ChatMessagePayload:
+      type: object
+      required:
+        - group_id
+        - content
+      properties:
+        group_id:
+          type: integer
+          example: 1
+        content:
+          type: string
+          example: Hello!
+        metadata:
+          type: string
+          example: ''
+
+    TypingPayload:
+      type: object
+      required:
+        - group_id
+        - is_typing
+      properties:
+        group_id:
+          type: integer
+          example: 1
+        is_typing:
+          type: boolean
+          example: true
+
+    JoinLeaveGroupPayload:
+      type: object
+      required:
+        - group_id
+      properties:
+        group_id:
+          type: integer
+          example: 1
+
+    PaymentStatusUpdatePayload:
+      type: object
+      properties:
+        bill_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [pending, paid]
+          example: paid
+
+    BillSettledPayload:
+      type: object
+      properties:
+        bill_id:
+          type: integer
+          example: 1
+        group_id:
+          type: integer
+          example: 1
