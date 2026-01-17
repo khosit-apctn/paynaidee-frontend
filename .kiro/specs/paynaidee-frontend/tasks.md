@@ -456,21 +456,21 @@
     - Handle bill_settled event to update UI
     - _Requirements: 6.4, 6.5, 6.6_
 
-- [ ] 16. Friends Feature
-  - [ ] 16.1 Create friends page
+- [x] 16. Friends Feature
+  - [x] 16.1 Create friends page
     - Create `app/(protected)/friends/page.tsx` with tabs (Friends, Requests, Search)
     - _Requirements: 3.6_
 
-  - [ ] 16.2 Create FriendCard component
+  - [x] 16.2 Create FriendCard component
     - Create `components/friends/friend-card.tsx` with user info
     - _Requirements: 3.6_
 
-  - [ ] 16.3 Create FriendSearch component
+  - [x] 16.3 Create FriendSearch component
     - Create `components/friends/friend-search.tsx` with search input
     - Implement paginated search results
     - _Requirements: 3.1, 3.7_
 
-  - [ ] 16.4 Create FriendRequestCard component
+  - [x] 16.4 Create FriendRequestCard component
     - Create `components/friends/friend-request-card.tsx` with accept/reject buttons
     - _Requirements: 3.3, 3.4, 3.5_
 
