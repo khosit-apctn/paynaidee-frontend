@@ -18,7 +18,11 @@
     "yes": "Yes",
     "no": "No",
     "or": "or",
-    "and": "and"
+    "and": "and",
+    "total": "Total",
+    "page": "Page",
+    "previous": "Previous",
+    "optional": "Optional"
   },
   "auth": {
     "login": "Login",
@@ -96,7 +100,24 @@
     "markAsPaid": "Mark as Paid",
     "generateQR": "Generate QR Code",
     "paymentQR": "Payment QR Code",
-    "scanToPay": "Scan to pay {{amount}}"
+    "scanToPay": "Scan to pay {{amount}}",
+    "qrHeader": "QR Header",
+    "qrHeaderPlaceholder": "Enter QR header (optional)",
+    "qrInstructions": "Scan this QR code with your banking app to make payment",
+    "billTitlePlaceholder": "e.g., Dinner at restaurant",
+    "descriptionPlaceholder": "Add description (optional)",
+    "noParticipants": "No participants",
+    "amountSummary": "Amount Summary",
+    "billInfo": "Bill Information",
+    "createdBy": "Created by",
+    "createdAt": "Created at",
+    "viewQR": "View QR",
+    "paymentUpdated": "Payment Updated",
+    "paymentStatusChanged": "Payment status has been updated",
+    "billSettled": "Bill Settled",
+    "allPaymentsCompleted": "All payments have been completed",
+    "createSuccess": "Bill created successfully",
+    "paymentStatusUpdated": "Payment status updated"
   },
   "friends": {
     "title": "Friends",
@@ -137,6 +158,10 @@
   "errors": {
     "unknown": "An unknown error occurred",
     "networkError": "Network error. Please check your connection.",
+    "loadFailed": "Failed to load data",
+    "createFailed": "Failed to create",
+    "updateFailed": "Failed to update",
+    "qrCodeGenerationFailed": "Failed to generate QR code",
     "invalidCredentials": "Invalid username or password",
     "unauthorized": "You are not authorized to perform this action",
     "tokenExpired": "Your session has expired. Please login again.",

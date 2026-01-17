@@ -18,7 +18,11 @@
     "yes": "ใช่",
     "no": "ไม่",
     "or": "หรือ",
-    "and": "และ"
+    "and": "และ",
+    "total": "รวม",
+    "page": "หน้า",
+    "previous": "ก่อนหน้า",
+    "optional": "ไม่บังคับ"
   },
   "auth": {
     "login": "เข้าสู่ระบบ",
@@ -96,7 +100,24 @@
     "markAsPaid": "ทำเครื่องหมายว่าจ่ายแล้ว",
     "generateQR": "สร้าง QR Code",
     "paymentQR": "QR Code สำหรับชำระเงิน",
-    "scanToPay": "สแกนเพื่อจ่าย {{amount}}"
+    "scanToPay": "สแกนเพื่อจ่าย {{amount}}",
+    "qrHeader": "หัวข้อ QR",
+    "qrHeaderPlaceholder": "ป้อนหัวข้อ QR (ไม่บังคับ)",
+    "qrInstructions": "สแกน QR Code นี้ด้วยแอปธนาคารของคุณเพื่อชำระเงิน",
+    "billTitlePlaceholder": "เช่น ค่าอาหารที่ร้านอาหาร",
+    "descriptionPlaceholder": "เพิ่มรายละเอียด (ไม่บังคับ)",
+    "noParticipants": "ไม่มีผู้ร่วมจ่าย",
+    "amountSummary": "สรุปยอดเงิน",
+    "billInfo": "ข้อมูลบิล",
+    "createdBy": "สร้างโดย",
+    "createdAt": "สร้างเมื่อ",
+    "viewQR": "ดู QR",
+    "paymentUpdated": "อัพเดทการชำระเงินแล้ว",
+    "paymentStatusChanged": "สถานะการชำระเงินได้รับการอัพเดท",
+    "billSettled": "ชำระบิลเรียบร้อย",
+    "allPaymentsCompleted": "ทุกคนชำระเงินครบแล้ว",
+    "createSuccess": "สร้างบิลสำเร็จ",
+    "paymentStatusUpdated": "อัพเดทสถานะการชำระเงินแล้ว"
   },
   "friends": {
     "title": "เพื่อน",
@@ -137,6 +158,10 @@
   "errors": {
     "unknown": "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",
     "networkError": "เกิดข้อผิดพลาดเครือข่าย กรุณาตรวจสอบการเชื่อมต่อ",
+    "loadFailed": "โหลดข้อมูลไม่สำเร็จ",
+    "createFailed": "สร้างไม่สำเร็จ",
+    "updateFailed": "อัพเดทไม่สำเร็จ",
+    "qrCodeGenerationFailed": "สร้าง QR Code ไม่สำเร็จ",
     "invalidCredentials": "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
     "unauthorized": "คุณไม่มีสิทธิ์ดำเนินการนี้",
     "tokenExpired": "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",

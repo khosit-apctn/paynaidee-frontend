@@ -407,21 +407,21 @@
     - Create `components/chat/typing-indicator.tsx` showing who is typing
     - _Requirements: 2.7_
 
-- [ ] 15. Bills Feature
-  - [ ] 15.1 Create group bills page
+- [x] 15. Bills Feature
+  - [x] 15.1 Create group bills page
     - Create `app/(protected)/groups/[id]/bills/page.tsx` with bill list
     - Implement pagination
     - _Requirements: 5.7_
 
-  - [ ] 15.2 Create BillCard component
+  - [x] 15.2 Create BillCard component
     - Create `components/bills/bill-card.tsx` with title, amount, status
     - _Requirements: 5.6_
 
-  - [ ] 15.3 Create new bill page
+  - [x] 15.3 Create new bill page
     - Create `app/(protected)/groups/[id]/bills/new/page.tsx` with bill form
     - _Requirements: 5.1_
 
-  - [ ] 15.4 Create BillForm component
+  - [x] 15.4 Create BillForm component
     - Create `components/forms/bill-form.tsx` with React Hook Form
     - Implement split type selection (equal/custom)
     - Add participant selection from group members
@@ -429,29 +429,29 @@
     - Validate with Zod schema
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.8, 5.9_
 
-  - [ ] 15.5 Create SplitCalculator component
+  - [x] 15.5 Create SplitCalculator component
     - Create `components/bills/split-calculator.tsx` for amount preview
     - Handle equal and custom split calculations
     - _Requirements: 5.2, 5.3_
 
-  - [ ] 15.6 Create bill detail page
+  - [x] 15.6 Create bill detail page
     - Create `app/(protected)/groups/[id]/bills/[billId]/page.tsx`
     - _Requirements: 5.6_
 
-  - [ ] 15.7 Create BillDetail component
+  - [x] 15.7 Create BillDetail component
     - Create `components/bills/bill-detail.tsx` with full bill info
     - _Requirements: 5.6_
 
-  - [ ] 15.8 Create ParticipantList component
+  - [x] 15.8 Create ParticipantList component
     - Create `components/bills/participant-list.tsx` with payment status
     - _Requirements: 5.6, 6.7_
 
-  - [ ] 15.9 Create QRCodeDisplay component
+  - [x] 15.9 Create QRCodeDisplay component
     - Create `components/bills/qr-code-display.tsx` using qrcode library
     - Render PromptPay-compatible QR codes
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 15.10 Implement payment status updates
+  - [x] 15.10 Implement payment status updates
     - Add payment status update functionality with WebSocket notifications
     - Handle bill_settled event to update UI
     - _Requirements: 6.4, 6.5, 6.6_
