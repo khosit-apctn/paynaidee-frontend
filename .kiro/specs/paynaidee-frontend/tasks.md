@@ -299,37 +299,37 @@
     - Implement role-based access control for admin routes
     - _Requirements: 1.7, 1.8, 1.9, 10.1, 10.2, 10.3, 10.4, 10.5_
 
-- [ ] 10. Layout Components
-  - [ ] 10.1 Create Header component
+- [x] 10. Layout Components
+  - [x] 10.1 Create Header component
     - Create `components/layout/header.tsx` with logo, language switcher, user menu
     - _Requirements: 7.7, 9.1_
 
-  - [ ] 10.2 Create BottomNav component
+  - [x] 10.2 Create BottomNav component
     - Create `components/layout/bottom-nav.tsx` for mobile navigation
     - Include Dashboard, Groups, Friends, Profile tabs
     - _Requirements: 9.1, 9.4_
 
-  - [ ] 10.3 Create Sidebar component
+  - [x] 10.3 Create Sidebar component
     - Create `components/layout/sidebar.tsx` for tablet/desktop navigation
     - _Requirements: 9.2_
 
-  - [ ] 10.4 Create PageContainer component
+  - [x] 10.4 Create PageContainer component
     - Create `components/layout/page-container.tsx` for consistent page layout
     - _Requirements: 9.1_
 
-- [ ] 11. Auth Pages
-  - [ ] 11.1 Create auth layout
+- [x] 11. Auth Pages
+  - [x] 11.1 Create auth layout
     - Create `app/(auth)/layout.tsx` for public auth pages
     - _Requirements: 10.2_
 
-  - [ ] 11.2 Create login page
+  - [x] 11.2 Create login page
     - Create `app/(auth)/login/page.tsx` with login form
     - Implement form validation with React Hook Form and Zod
     - Handle login API call and token storage
     - Display localized error messages
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ] 11.3 Create LoginForm component
+  - [x] 11.3 Create LoginForm component
     - Create `components/forms/login-form.tsx` with username/password fields
     - _Requirements: 1.1, 5.8, 5.9_
 
