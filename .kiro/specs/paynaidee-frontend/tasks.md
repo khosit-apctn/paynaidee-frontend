@@ -378,32 +378,32 @@
     - Create `app/(protected)/groups/[id]/settings/page.tsx` for group management
     - _Requirements: 4.8_
 
-- [ ] 14. Chat Feature
-  - [ ] 14.1 Create group chat page
+- [x] 14. Chat Feature
+  - [x] 14.1 Create group chat page
     - Create `app/(protected)/groups/[id]/chat/page.tsx` with chat container
     - _Requirements: 2.1_
 
-  - [ ] 14.2 Create ChatContainer component
+  - [x] 14.2 Create ChatContainer component
     - Create `components/chat/chat-container.tsx` managing WebSocket connection
     - Handle join_group on mount and leave_group on unmount
     - _Requirements: 2.1, 2.9, 2.10_
 
-  - [ ] 14.3 Create MessageList component
+  - [x] 14.3 Create MessageList component
     - Create `components/chat/message-list.tsx` with infinite scroll for history
     - _Requirements: 2.4, 2.5, 9.5_
 
-  - [ ] 14.4 Create MessageItem component
+  - [x] 14.4 Create MessageItem component
     - Create `components/chat/message-item.tsx` with sender info and timestamp
     - Support text, bill, and system message types
     - Handle emoji and Thai text rendering
     - _Requirements: 2.4, 2.8_
 
-  - [ ] 14.5 Create MessageInput component
+  - [x] 14.5 Create MessageInput component
     - Create `components/chat/message-input.tsx` with send button
     - Implement typing indicator sending
     - _Requirements: 2.3, 2.6_
 
-  - [ ] 14.6 Create TypingIndicator component
+  - [x] 14.6 Create TypingIndicator component
     - Create `components/chat/typing-indicator.tsx` showing who is typing
     - _Requirements: 2.7_
 
