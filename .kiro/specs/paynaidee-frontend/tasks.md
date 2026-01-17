@@ -243,56 +243,56 @@
     - Create `lib/hooks/use-chat.ts` with useMessages (paginated), useSendMessage hooks
     - _Requirements: 2.3, 2.5, 8.3_
 
-- [ ] 8. Base UI Components
-  - [ ] 8.1 Create Button component
+- [x] 8. Base UI Components
+  - [x] 8.1 Create Button component
     - Create `components/ui/button.tsx` with variants (primary, secondary, outline, ghost)
     - Support sizes (sm, md, lg), loading state, and disabled state
     - Ensure touch-friendly sizing for mobile
     - _Requirements: 9.3, 9.6_
 
-  - [ ] 8.2 Create Input component
+  - [x] 8.2 Create Input component
     - Create `components/ui/input.tsx` with label, error message, and helper text support
     - Support different types (text, email, password, number)
     - Ensure touch-friendly sizing
     - _Requirements: 9.3, 9.6_
 
-  - [ ] 8.3 Create Card component
+  - [x] 8.3 Create Card component
     - Create `components/ui/card.tsx` with header, body, footer sections
     - _Requirements: 9.1_
 
-  - [ ] 8.4 Create Modal component
+  - [x] 8.4 Create Modal component
     - Create `components/ui/modal.tsx` with overlay, close button, and accessibility
     - _Requirements: 9.6_
 
-  - [ ] 8.5 Create Avatar component
+  - [x] 8.5 Create Avatar component
     - Create `components/ui/avatar.tsx` with image fallback to initials
     - Support different sizes
     - _Requirements: 9.1_
 
-  - [ ] 8.6 Create Badge component
+  - [x] 8.6 Create Badge component
     - Create `components/ui/badge.tsx` for status indicators and role badges
     - _Requirements: 4.6, 6.7_
 
-  - [ ] 8.7 Create Skeleton component
+  - [x] 8.7 Create Skeleton component
     - Create `components/ui/skeleton.tsx` for loading states
     - _Requirements: 8.4_
 
-  - [ ] 8.8 Create Toast component
+  - [x] 8.8 Create Toast component
     - Create `components/ui/toast.tsx` for notifications
     - Support success, error, warning, info variants
     - _Requirements: 8.5_
 
-  - [ ] 8.9 Create Spinner component
+  - [x] 8.9 Create Spinner component
     - Create `components/ui/spinner.tsx` for loading indicators
     - _Requirements: 8.4_
 
-- [ ] 9. Auth Provider and Middleware
-  - [ ] 9.1 Create auth provider component
+- [x] 9. Auth Provider and Middleware
+  - [x] 9.1 Create auth provider component
     - Create `components/providers/auth-provider.tsx` for auth state initialization
     - Handle token restoration on app load
     - _Requirements: 8.7_
 
-  - [ ] 9.2 Implement Next.js middleware
+  - [x] 9.2 Implement Next.js middleware
     - Create `middleware.ts` for route protection
     - Implement JWT validation and expiration check
     - Handle redirect to login with return URL
