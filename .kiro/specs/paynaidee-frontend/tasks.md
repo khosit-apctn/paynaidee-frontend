@@ -333,48 +333,48 @@
     - Create `components/forms/login-form.tsx` with username/password fields
     - _Requirements: 1.1, 5.8, 5.9_
 
-- [ ] 12. Protected Layout and Dashboard
-  - [ ] 12.1 Create protected layout
+- [x] 12. Protected Layout and Dashboard
+  - [x] 12.1 Create protected layout
     - Create `app/(protected)/layout.tsx` with Header, BottomNav, and providers
     - _Requirements: 10.1_
 
-  - [ ] 12.2 Create dashboard page
+  - [x] 12.2 Create dashboard page
     - Create `app/(protected)/dashboard/page.tsx` with groups overview
     - Display recent activity and quick actions
     - _Requirements: 4.9_
 
-  - [ ] 12.3 Update root page
+  - [x] 12.3 Update root page
     - Update `app/page.tsx` to redirect to dashboard or login
     - _Requirements: 10.2_
 
-- [ ] 13. Groups Feature
-  - [ ] 13.1 Create groups list page
+- [x] 13. Groups Feature
+  - [x] 13.1 Create groups list page
     - Create `app/(protected)/groups/page.tsx` with group cards
     - Implement create group button and modal
     - _Requirements: 4.1, 4.9_
 
-  - [ ] 13.2 Create GroupCard component
+  - [x] 13.2 Create GroupCard component
     - Create `components/groups/group-card.tsx` with group info and member count
     - _Requirements: 4.9_
 
-  - [ ] 13.3 Create GroupForm component
+  - [x] 13.3 Create GroupForm component
     - Create `components/forms/group-form.tsx` for create/edit group
     - _Requirements: 4.1, 4.8_
 
-  - [ ] 13.4 Create group detail page
+  - [x] 13.4 Create group detail page
     - Create `app/(protected)/groups/[id]/page.tsx` with group info and tabs
     - _Requirements: 4.6_
 
-  - [ ] 13.5 Create MemberList component
+  - [x] 13.5 Create MemberList component
     - Create `components/groups/member-list.tsx` with role badges
     - Implement admin actions (add, remove, change role) conditionally
     - _Requirements: 4.3, 4.4, 4.5, 4.6, 4.7_
 
-  - [ ] 13.6 Create MemberRoleBadge component
+  - [x] 13.6 Create MemberRoleBadge component
     - Create `components/groups/member-role-badge.tsx` for admin/member display
     - _Requirements: 4.6_
 
-  - [ ] 13.7 Create group settings page
+  - [x] 13.7 Create group settings page
     - Create `app/(protected)/groups/[id]/settings/page.tsx` for group management
     - _Requirements: 4.8_
 
