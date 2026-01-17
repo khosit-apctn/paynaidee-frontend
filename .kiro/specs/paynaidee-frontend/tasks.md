@@ -474,13 +474,13 @@
     - Create `components/friends/friend-request-card.tsx` with accept/reject buttons
     - _Requirements: 3.3, 3.4, 3.5_
 
-- [ ] 17. Profile Feature
-  - [ ] 17.1 Create profile page
+- [x] 17. Profile Feature
+  - [x] 17.1 Create profile page
     - Create `app/(protected)/profile/page.tsx` with user info and settings
     - Include language switcher
     - _Requirements: 7.7_
 
-  - [ ] 17.2 Create ProfileForm component
+  - [x] 17.2 Create ProfileForm component
     - Create `components/forms/profile-form.tsx` for profile editing
     - _Requirements: 8.1_
 

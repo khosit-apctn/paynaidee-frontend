@@ -159,7 +159,8 @@
     "language": "ภาษา",
     "selectLanguage": "เลือกภาษา",
     "account": "บัญชี",
-    "preferences": "การตั้งค่า"
+    "preferences": "การตั้งค่า",
+    "updateSuccess": "อัพเดทโปรไฟล์สำเร็จ"
   },
   "errors": {
     "unknown": "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ",

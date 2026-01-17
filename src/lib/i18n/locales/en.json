@@ -159,7 +159,8 @@
     "language": "Language",
     "selectLanguage": "Select Language",
     "account": "Account",
-    "preferences": "Preferences"
+    "preferences": "Preferences",
+    "updateSuccess": "Profile updated successfully"
   },
   "errors": {
     "unknown": "An unknown error occurred",
