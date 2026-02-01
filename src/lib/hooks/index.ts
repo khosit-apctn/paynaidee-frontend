@@ -55,3 +55,6 @@ export {
   useSendMessage,
   usePrefetchMessages,
 } from './use-chat';
+
+// Utility hooks
+export { useClickOutside } from './use-click-outside';

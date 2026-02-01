@@ -1,13 +1,44 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslation, useLocale, useSetLocale } from '@/lib/i18n';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useLogout } from '@/lib/hooks/use-auth';
+import { useClickOutside } from '@/lib/hooks/use-click-outside';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import type { Locale } from '@/lib/i18n/config';
+
+// Static SVG icons (Vercel best practice: rendering-hoist-jsx)
+const GlobeIcon = (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+        />
+    </svg>
+);
+
+const ChevronDownIcon = (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+);
+
+const UserIcon = (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+);
+
+const LogoutIcon = (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+);
 
 /**
  * Header Component
@@ -28,19 +59,11 @@ export function Header() {
     const userMenuRef = useRef<HTMLDivElement>(null);
     const langMenuRef = useRef<HTMLDivElement>(null);
 
-    // Close menus when clicking outside
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-                setIsUserMenuOpen(false);
-            }
-            if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
-                setIsLangMenuOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    // Close menus when clicking outside (Vercel best practice: client-event-listeners)
+    useClickOutside([userMenuRef, langMenuRef], () => {
+        setIsUserMenuOpen(false);
+        setIsLangMenuOpen(false);
+    });
 
     const handleLogout = () => {
         setIsUserMenuOpen(false);
@@ -78,19 +101,7 @@ export function Header() {
                             onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
                             className="gap-1 px-2"
                         >
-                            <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
-                                />
-                            </svg>
+                            {GlobeIcon}
                             <span className="uppercase text-xs">{locale}</span>
                         </Button>
 
@@ -128,14 +139,9 @@ export function Header() {
                                 <span className="hidden md:inline-block text-sm font-medium text-foreground">
                                     {user.display_name || user.username}
                                 </span>
-                                <svg
-                                    className={`h-4 w-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <div className={`transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}>
+                                    {ChevronDownIcon}
+                                </div>
                             </button>
 
                             {isUserMenuOpen && (
@@ -153,9 +159,7 @@ export function Header() {
                                         onClick={() => setIsUserMenuOpen(false)}
                                         className="flex w-full items-center px-3 py-2 text-sm text-foreground hover:bg-muted"
                                     >
-                                        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                        <span className="mr-2">{UserIcon}</span>
                                         {t('nav.profile')}
                                     </Link>
                                     <button
@@ -163,9 +167,7 @@ export function Header() {
                                         disabled={isLoggingOut}
                                         className="flex w-full items-center px-3 py-2 text-sm text-error hover:bg-muted disabled:opacity-50"
                                     >
-                                        <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
+                                        <span className="mr-2">{LogoutIcon}</span>
                                         {isLoggingOut ? t('common.loading') : t('auth.logout')}
                                     </button>
                                 </div>
