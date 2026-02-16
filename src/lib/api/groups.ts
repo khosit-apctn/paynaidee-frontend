@@ -7,24 +7,14 @@ import type {
   AddMemberRequest,
   UpdateMemberRoleRequest,
 } from '@/types/api';
-import type { Group, GroupMember } from '@/types/models';
-
-// Response types
-interface GroupsListResponse {
-  groups: Group[];
-}
-
-interface GroupMembersResponse {
-  members: GroupMember[];
-}
+import type { Group } from '@/types/models';
 
 /**
  * Get all groups the current user belongs to
  * @returns List of groups
  */
 export async function getGroups(): Promise<Group[]> {
-  const response = await apiClient.get<GroupsListResponse>('/groups');
-  return response.data.groups;
+  return apiClient.get<Group[]>('/groups');
 }
 
 /**
@@ -33,8 +23,7 @@ export async function getGroups(): Promise<Group[]> {
  * @returns Group details with members
  */
 export async function getGroup(groupId: number): Promise<Group> {
-  const response = await apiClient.get<Group>(`/groups/${groupId}`);
-  return response.data;
+  return apiClient.get<Group>(`/groups/${groupId}`);
 }
 
 /**
@@ -43,10 +32,8 @@ export async function getGroup(groupId: number): Promise<Group> {
  * @returns Created group
  */
 export async function createGroup(data: CreateGroupRequest): Promise<Group> {
-  const response = await apiClient.post<Group>('/groups', data);
-  return response.data;
+  return apiClient.post<Group>('/groups', data);
 }
-
 
 /**
  * Update a group's information
@@ -58,28 +45,7 @@ export async function updateGroup(
   groupId: number,
   data: UpdateGroupRequest
 ): Promise<Group> {
-  const response = await apiClient.put<Group>(`/groups/${groupId}`, data);
-  return response.data;
-}
-
-/**
- * Delete a group
- * @param groupId - Group ID
- */
-export async function deleteGroup(groupId: number): Promise<void> {
-  await apiClient.delete(`/groups/${groupId}`);
-}
-
-/**
- * Get members of a group
- * @param groupId - Group ID
- * @returns List of group members
- */
-export async function getGroupMembers(groupId: number): Promise<GroupMember[]> {
-  const response = await apiClient.get<GroupMembersResponse>(
-    `/groups/${groupId}/members`
-  );
-  return response.data.members;
+  return apiClient.put<Group>(`/groups/${groupId}`, data);
 }
 
 /**
@@ -105,7 +71,7 @@ export async function updateMemberRole(
   userId: number,
   data: UpdateMemberRoleRequest
 ): Promise<void> {
-  await apiClient.put(`/groups/${groupId}/members/${userId}/role`, data);
+  await apiClient.put(`/groups/${groupId}/members/${userId}`, data);
 }
 
 /**
@@ -118,12 +84,4 @@ export async function removeMember(
   userId: number
 ): Promise<void> {
   await apiClient.delete(`/groups/${groupId}/members/${userId}`);
-}
-
-/**
- * Leave a group (remove self)
- * @param groupId - Group ID
- */
-export async function leaveGroup(groupId: number): Promise<void> {
-  await apiClient.post(`/groups/${groupId}/leave`);
 }

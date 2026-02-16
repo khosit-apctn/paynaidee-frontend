@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { PageContainer } from '@/components/layout/page-container';
 import { useTranslation } from '@/lib/i18n';
-import { useFriends, useFriendRequests } from '@/lib/hooks/use-friends';
+import { useFriends } from '@/lib/hooks/use-friends';
 import { FriendCard } from '@/components/friends/friend-card';
-import { FriendRequestCard } from '@/components/friends/friend-request-card';
 import { FriendSearch } from '@/components/friends/friend-search';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -21,7 +20,7 @@ export default function FriendsPage() {
     const [activeTab, setActiveTab] = useState<TabType>('friends');
 
     const { data: friends, isLoading: friendsLoading } = useFriends();
-    const { data: requests, isLoading: requestsLoading } = useFriendRequests();
+
 
     const tabs = [
         { id: 'friends' as const, label: t('friends.title') },
@@ -39,8 +38,8 @@ export default function FriendsPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-4 py-2 font-medium transition-colors relative ${activeTab === tab.id
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                ? 'text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             {tab.label}
@@ -98,38 +97,24 @@ export default function FriendsPage() {
                 {/* Requests Tab */}
                 {activeTab === 'requests' && (
                     <div>
-                        {requestsLoading ? (
-                            <div className="space-y-3">
-                                {[...Array(2)].map((_, i) => (
-                                    <Skeleton key={i} className="h-24 w-full" />
-                                ))}
-                            </div>
-                        ) : requests && requests.length > 0 ? (
-                            <div className="space-y-3">
-                                {requests.map((request) => (
-                                    <FriendRequestCard key={request.id} request={request} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12">
-                                <svg
-                                    className="mx-auto h-12 w-12 text-muted-foreground mb-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
-                                <p className="text-muted-foreground font-medium">
-                                    {t('friends.noRequests')}
-                                </p>
-                            </div>
-                        )}
+                        <div className="text-center py-12">
+                            <svg
+                                className="mx-auto h-12 w-12 text-muted-foreground mb-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                            <p className="text-muted-foreground font-medium">
+                                {t('friends.noRequests')}
+                            </p>
+                        </div>
                     </div>
                 )}
 

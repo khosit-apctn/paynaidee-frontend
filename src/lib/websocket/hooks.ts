@@ -23,10 +23,10 @@ export function useWebSocket() {
 
   useEffect(() => {
     const ws = wsRef.current;
-    
+
     // Subscribe to connection state changes
     const unsubscribe = ws.onStateChange(setConnectionState);
-    
+
     // Set initial state
     setConnectionState(ws.connectionState);
 
@@ -40,7 +40,7 @@ export function useWebSocket() {
       console.warn('[useWebSocket] Cannot connect: not authenticated');
       return;
     }
-    
+
     try {
       await wsRef.current.connect();
     } catch (error) {
@@ -100,7 +100,6 @@ export function useChatWebSocket(groupId: number | null) {
           phone_number: '',
           role: 'user',
           created_at: '',
-          updated_at: '',
         },
       };
 
@@ -120,7 +119,7 @@ export function useChatWebSocket(groupId: number | null) {
     const handleTyping = (payload: TypingReceived) => {
       // Only process typing for the current group
       if (payload.group_id !== groupId) return;
-      
+
       // Don't show typing indicator for current user
       if (payload.user_id === currentUserId) return;
 

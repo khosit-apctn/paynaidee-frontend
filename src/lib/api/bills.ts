@@ -4,13 +4,6 @@ import { apiClient } from './client';
 import type { CreateBillRequest, UpdatePaymentStatusRequest } from '@/types/api';
 import type { Bill, QRCodeResponse } from '@/types/models';
 
-// Response types
-interface BillsListResponse {
-  bills: Bill[];
-  limit: number;
-  offset: number;
-}
-
 // Pagination params
 interface PaginationParams {
   limit?: number;
@@ -21,33 +14,30 @@ interface PaginationParams {
  * Get bills for a group
  * @param groupId - Group ID
  * @param params - Pagination parameters
- * @returns Paginated list of bills
+ * @returns List of bills
  */
 export async function getGroupBills(
   groupId: number,
-  params: PaginationParams = {}
-): Promise<BillsListResponse> {
+  params?: PaginationParams
+): Promise<Bill[]> {
   const queryParams = new URLSearchParams();
-  if (params.limit !== undefined) queryParams.set('limit', params.limit.toString());
-  if (params.offset !== undefined) queryParams.set('offset', params.offset.toString());
+  if (params?.limit) queryParams.set('limit', params.limit.toString());
+  if (params?.offset) queryParams.set('offset', params.offset.toString());
 
   const queryString = queryParams.toString();
-  const endpoint = `/groups/${groupId}/bills${queryString ? `?${queryString}` : ''}`;
+  const url = `/groups/${groupId}/bills${queryString ? `?${queryString}` : ''}`;
 
-  const response = await apiClient.get<BillsListResponse>(endpoint);
-  return response.data;
+  return apiClient.get<Bill[]>(url);
 }
 
 /**
  * Get a specific bill by ID
  * @param billId - Bill ID
- * @returns Bill details with participants
+ * @returns Bill details
  */
 export async function getBill(billId: number): Promise<Bill> {
-  const response = await apiClient.get<Bill>(`/bills/${billId}`);
-  return response.data;
+  return apiClient.get<Bill>(`/bills/${billId}`);
 }
-
 
 /**
  * Create a new bill in a group
@@ -59,78 +49,47 @@ export async function createBill(
   groupId: number,
   data: CreateBillRequest
 ): Promise<Bill> {
-  const response = await apiClient.post<Bill>(`/groups/${groupId}/bills`, data);
-  return response.data;
+  return apiClient.post<Bill>(`/groups/${groupId}/bills`, data);
 }
 
 /**
- * Update a bill
- * @param billId - Bill ID
- * @param data - Bill update data
- * @returns Updated bill
- */
-export async function updateBill(
-  billId: number,
-  data: Partial<CreateBillRequest>
-): Promise<Bill> {
-  const response = await apiClient.put<Bill>(`/bills/${billId}`, data);
-  return response.data;
-}
-
-/**
- * Delete a bill
- * @param billId - Bill ID
- */
-export async function deleteBill(billId: number): Promise<void> {
-  await apiClient.delete(`/bills/${billId}`);
-}
-
-/**
- * Update payment status for a bill participant
+ * Update the payment status for a bill participant
  * @param billId - Bill ID
  * @param userId - User ID of the participant
- * @param data - Payment status update
+ * @param data - Payment status update data
  */
 export async function updatePaymentStatus(
   billId: number,
   userId: number,
   data: UpdatePaymentStatusRequest
 ): Promise<void> {
-  await apiClient.put(`/bills/${billId}/participants/${userId}/payment`, data);
+  await apiClient.put(
+    `/bills/${billId}/participants/${userId}/status`,
+    data
+  );
 }
 
 /**
- * Get QR code data for a bill
+ * Generate QR code for a bill (bill creator's QR)
  * @param billId - Bill ID
  * @returns QR code data
  */
 export async function getBillQR(billId: number): Promise<QRCodeResponse> {
-  const response = await apiClient.get<QRCodeResponse>(`/bills/${billId}/qr`);
-  return response.data;
+  return apiClient.post<QRCodeResponse>(`/bills/${billId}/qr`, {});
 }
 
 /**
- * Get QR code data for a specific participant's payment
+ * Generate QR code for a specific participant's payment
  * @param billId - Bill ID
- * @param userId - User ID of the participant
- * @returns QR code data for the participant
+ * @param userId - Participant user ID
+ * @returns QR code data
  */
 export async function getParticipantQR(
   billId: number,
   userId: number
 ): Promise<QRCodeResponse> {
-  const response = await apiClient.get<QRCodeResponse>(
-    `/bills/${billId}/participants/${userId}/qr`
+  return apiClient.post<QRCodeResponse>(
+    `/bills/${billId}/participants/${userId}/qr`,
+    {}
   );
-  return response.data;
-}
-
-/**
- * Mark a bill as settled
- * @param billId - Bill ID
- * @returns Updated bill
- */
-export async function settleBill(billId: number): Promise<Bill> {
-  const response = await apiClient.put<Bill>(`/bills/${billId}/settle`);
-  return response.data;
 }

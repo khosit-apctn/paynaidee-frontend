@@ -1,8 +1,9 @@
 'use client';
+import React, { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { useUIStore } from '@/lib/stores/ui-store';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { useGroup, useGroupMembers } from '@/lib/hooks/use-groups';
+import { useGroup } from '@/lib/hooks/use-groups';
 import { useGroupBills, useBillQR } from '@/lib/hooks/use-bills';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +15,7 @@ import { formatThaiCurrency } from '@/lib/utils/currency';
 /**
  * ContextSidebar
  * Right-most column (4th): Group profile, QR Payment Zone, and recent receipts
- * Real data from useGroup, useGroupMembers, useGroupBills, useBillQR
+ * Real data from useGroup, useGroupBills, useBillQR
  */
 export function ContextSidebar() {
     const activeGroupId = useUIStore((s) => s.activeGroupId);
@@ -43,10 +44,8 @@ function GroupProfileSection({ groupId }: { groupId: number }) {
     const t = useTranslation();
     const { user } = useAuthStore();
     const { data: group, isLoading } = useGroup(groupId);
-    const { data: membersData } = useGroupMembers(groupId);
     const openModal = useUIStore((s) => s.openModal);
-
-    const members = membersData || group?.members || [];
+    const members = group?.members || [];
     const isAdmin = members.some((m: import('@/types/models').GroupMember) => m.user_id === user?.id && m.role === 'admin');
 
     if (isLoading) {
@@ -136,7 +135,16 @@ function GroupProfileSection({ groupId }: { groupId: number }) {
 /** QR Payment Zone — renders PromptPay QR from useBillQR */
 function QRPaymentZone({ billId }: { billId: number | null }) {
     const t = useTranslation();
-    const { data: qrData, isLoading } = useBillQR(billId || 0);
+    const { mutate: fetchQR, data: qrData, isPending } = useBillQR(billId || 0);
+
+    // Trigger QR fetch when billId changes
+    const [hasFetched, setHasFetched] = useState(false);
+    React.useEffect(() => {
+        if (billId && !hasFetched) {
+            fetchQR();
+            setHasFetched(true);
+        }
+    }, [billId, hasFetched, fetchQR]);
 
     return (
         <div className="p-5 border-b border-dash-border">
@@ -153,7 +161,7 @@ function QRPaymentZone({ billId }: { billId: number | null }) {
                     </div>
                     <p className="text-xs text-dash-text-dim">{t('bills.scanToPay', { amount: '' })}</p>
                 </div>
-            ) : isLoading ? (
+            ) : isPending ? (
                 <div className="glass-card-sm p-6 flex flex-col items-center">
                     <Skeleton className="w-40 h-40 bg-dash-surface rounded-xl" />
                     <Skeleton className="h-3 w-32 bg-dash-surface mt-3" />
@@ -180,7 +188,7 @@ function RecentReceiptsSection({ groupId }: { groupId: number }) {
     const setActiveBillId = useUIStore((s) => s.setActiveBillId);
     const openModal = useUIStore((s) => s.openModal);
 
-    const bills = billsData?.bills || [];
+    const bills = billsData || [];
 
     return (
         <div className="p-5">
@@ -214,7 +222,7 @@ function RecentReceiptsSection({ groupId }: { groupId: number }) {
                         >
                             <div className="w-9 h-9 rounded-lg bg-dash-surface flex items-center justify-center flex-shrink-0">
                                 <span className="text-sm">
-                                    {bill.status === 'settled' ? '✅' : '📄'}
+                                    {bill.status === 'SETTLED' ? '✅' : '📄'}
                                 </span>
                             </div>
                             <div className="flex-1 min-w-0">

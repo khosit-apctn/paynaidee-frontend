@@ -3,12 +3,9 @@ import {
   getGroupBills,
   getBill,
   createBill,
-  updateBill,
-  deleteBill,
   updatePaymentStatus,
   getBillQR,
   getParticipantQR,
-  settleBill,
 } from '@/lib/api/bills';
 import type { CreateBillRequest, UpdatePaymentStatusRequest } from '@/types/api';
 
@@ -52,62 +49,26 @@ export function useCreateBill(groupId: number) {
   return useMutation({
     mutationFn: (data: CreateBillRequest) => createBill(groupId, data),
     onSuccess: () => {
-      // Invalidate bills list for the group
-      queryClient.invalidateQueries({ queryKey: billKeys.byGroup(groupId) });
-    },
-  });
-}
-
-
-/**
- * Hook to update a bill
- */
-export function useUpdateBill(billId: number, groupId: number) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: Partial<CreateBillRequest>) => updateBill(billId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: billKeys.detail(billId) });
       queryClient.invalidateQueries({ queryKey: billKeys.byGroup(groupId) });
     },
   });
 }
 
 /**
- * Hook to delete a bill
- */
-export function useDeleteBill(groupId: number) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (billId: number) => deleteBill(billId),
-    onSuccess: (_, billId) => {
-      queryClient.removeQueries({ queryKey: billKeys.detail(billId) });
-      queryClient.invalidateQueries({ queryKey: billKeys.byGroup(groupId) });
-    },
-  });
-}
-
-/**
- * Hook to get QR code data for a bill
+ * Hook to get QR code data for a bill (POST — generates QR)
  */
 export function useBillQR(billId: number) {
-  return useQuery({
-    queryKey: billKeys.qr(billId),
-    queryFn: () => getBillQR(billId),
-    enabled: !!billId,
+  return useMutation({
+    mutationFn: () => getBillQR(billId),
   });
 }
 
 /**
- * Hook to get QR code data for a specific participant's payment
+ * Hook to get QR code data for a specific participant's payment (POST — generates QR)
  */
 export function useParticipantQR(billId: number, userId: number) {
-  return useQuery({
-    queryKey: billKeys.qr(billId, userId),
-    queryFn: () => getParticipantQR(billId, userId),
-    enabled: !!billId && !!userId,
+  return useMutation({
+    mutationFn: () => getParticipantQR(billId, userId),
   });
 }
 
@@ -121,21 +82,6 @@ export function useUpdatePaymentStatus(billId: number, groupId: number) {
     mutationFn: ({ userId, data }: { userId: number; data: UpdatePaymentStatusRequest }) =>
       updatePaymentStatus(billId, userId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: billKeys.detail(billId) });
-      queryClient.invalidateQueries({ queryKey: billKeys.byGroup(groupId) });
-    },
-  });
-}
-
-/**
- * Hook to settle a bill (mark as fully paid)
- */
-export function useSettleBill(groupId: number) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (billId: number) => settleBill(billId),
-    onSuccess: (_, billId) => {
       queryClient.invalidateQueries({ queryKey: billKeys.detail(billId) });
       queryClient.invalidateQueries({ queryKey: billKeys.byGroup(groupId) });
     },

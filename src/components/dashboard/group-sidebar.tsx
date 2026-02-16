@@ -157,12 +157,12 @@ function GroupStatusBadge({ groupId }: { groupId: number }) {
     const t = useTranslation();
     const { data: billsData } = useGroupBills(groupId, 100, 0);
 
-    const bills = billsData?.bills;
+    const bills = billsData;
     if (!bills || bills.length === 0) return null;
 
-    const pendingCount = bills.filter((b) => b.status === 'pending').length;
+    const pendingCount = bills.filter((b) => b.status === 'PENDING').length;
     const totalOwed = bills
-        .filter((b) => b.status === 'pending')
+        .filter((b) => b.status === 'PENDING')
         .reduce((sum, b) => sum + b.total_amount, 0);
 
     if (pendingCount === 0) {

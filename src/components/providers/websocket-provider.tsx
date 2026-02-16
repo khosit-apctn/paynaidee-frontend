@@ -68,11 +68,11 @@ export function WebSocketProvider({
   const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
   const [lastError, setLastError] = useState<Error | null>(null);
   const wsRef = useRef<PayNaiDeeWebSocket | null>(null);
-  
+
   // Auth state
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
-  
+
   // Chat store actions
   const addMessage = useChatStore((state) => state.addMessage);
   const setTyping = useChatStore((state) => state.setTyping);
@@ -81,10 +81,10 @@ export function WebSocketProvider({
   // Initialize WebSocket instance
   useEffect(() => {
     wsRef.current = getWebSocketInstance();
-    
+
     // Subscribe to connection state changes
     const unsubscribe = wsRef.current.onStateChange(setConnectionState);
-    
+
     return () => {
       unsubscribe();
     };
@@ -110,7 +110,6 @@ export function WebSocketProvider({
           phone_number: '',
           role: 'user',
           created_at: '',
-          updated_at: '',
         },
       };
       addMessage(payload.group_id, message);
@@ -187,9 +186,9 @@ export function WebSocketProvider({
     if (!wsRef.current) {
       throw new Error('WebSocket not initialized');
     }
-    
+
     setLastError(null);
-    
+
     try {
       await wsRef.current.connect();
     } catch (error) {
@@ -226,11 +225,11 @@ export function WebSocketProvider({
  */
 export function useWebSocketContext(): WebSocketContextValue {
   const context = useContext(WebSocketContext);
-  
+
   if (!context) {
     throw new Error('useWebSocketContext must be used within a WebSocketProvider');
   }
-  
+
   return context;
 }
 

@@ -67,7 +67,7 @@ export interface LeaveGroupPayload {
 export interface PaymentUpdatePayload {
   bill_id: number;
   user_id: number;
-  payment_status: 'pending' | 'paid';
+  payment_status: 'PENDING' | 'PAID';
   paid_at: string | null;
 }
 

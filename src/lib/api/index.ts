@@ -34,12 +34,9 @@ export {
   getGroup,
   createGroup,
   updateGroup,
-  deleteGroup,
-  getGroupMembers,
   addMember,
   updateMemberRole,
   removeMember,
-  leaveGroup,
 } from './groups';
 
 // Bills API
@@ -47,12 +44,9 @@ export {
   getGroupBills,
   getBill,
   createBill,
-  updateBill,
-  deleteBill,
   updatePaymentStatus,
   getBillQR,
   getParticipantQR,
-  settleBill,
 } from './bills';
 
 // Messages API
@@ -61,11 +55,7 @@ export { getMessages, sendMessage } from './messages';
 // Friends API
 export {
   getFriends,
-  getPendingRequests,
-  getSentRequests,
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
-  removeFriend,
-  getFriendshipStatus,
 } from './friends';

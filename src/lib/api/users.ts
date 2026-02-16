@@ -9,8 +9,7 @@ import type { User } from '@/types/models';
  * @returns User profile data
  */
 export async function getProfile(): Promise<User> {
-  const response = await apiClient.get<User>('/users/me');
-  return response.data;
+  return apiClient.get<User>('/users/profile');
 }
 
 /**
@@ -19,32 +18,23 @@ export async function getProfile(): Promise<User> {
  * @returns Updated user data
  */
 export async function updateProfile(data: UpdateProfileRequest): Promise<User> {
-  const response = await apiClient.put<User>('/users/me', data);
-  return response.data;
-}
-
-// Search users response type
-interface SearchUsersResponse {
-  users: User[];
-  limit: number;
-  offset: number;
+  return apiClient.put<User>('/users/profile', data);
 }
 
 /**
  * Search for users by username, email, or phone number
  * @param params - Search parameters
- * @returns Paginated list of users
+ * @returns List of matching users
  */
-export async function searchUsers(params: SearchUsersParams): Promise<SearchUsersResponse> {
+export async function searchUsers(params: SearchUsersParams): Promise<User[]> {
   const queryParams = new URLSearchParams();
   queryParams.set('q', params.query);
   if (params.limit !== undefined) queryParams.set('limit', params.limit.toString());
   if (params.offset !== undefined) queryParams.set('offset', params.offset.toString());
 
-  const response = await apiClient.get<SearchUsersResponse>(
+  return apiClient.get<User[]>(
     `/users/search?${queryParams.toString()}`
   );
-  return response.data;
 }
 
 /**
@@ -53,6 +43,5 @@ export async function searchUsers(params: SearchUsersParams): Promise<SearchUser
  * @returns User data
  */
 export async function getUserById(userId: number): Promise<User> {
-  const response = await apiClient.get<User>(`/users/${userId}`);
-  return response.data;
+  return apiClient.get<User>(`/users/${userId}`);
 }

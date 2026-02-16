@@ -33,13 +33,13 @@ export function BillSplitCard({ billId }: { billId: number }) {
     }
 
     const totalParticipants = bill.participants?.length || 0;
-    const paidCount = bill.participants?.filter((p) => p.payment_status === 'paid').length || 0;
+    const paidCount = bill.participants?.filter((p) => p.payment_status === 'PAID').length || 0;
     const progressPercent = totalParticipants > 0 ? (paidCount / totalParticipants) * 100 : 0;
-    const isSettled = bill.status === 'settled';
+    const isSettled = bill.status === 'SETTLED';
 
     // Current user's participant record
     const myParticipant = bill.participants?.find((p) => p.user_id === user?.id);
-    const isMyPaymentPending = myParticipant && myParticipant.payment_status === 'pending';
+    const isMyPaymentPending = myParticipant && myParticipant.payment_status === 'PENDING';
 
     // Check if current user is admin of the group
     const isAdmin = bill.group?.members?.some(
@@ -100,7 +100,7 @@ export function BillSplitCard({ billId }: { billId: number }) {
                             alt={p.user?.display_name || p.user?.username}
                             fallback={p.user?.display_name || p.user?.username}
                             size="sm"
-                            className={`ring-2 ${p.payment_status === 'paid'
+                            className={`ring-2 ${p.payment_status === 'PAID'
                                 ? 'ring-green-500/50'
                                 : 'ring-dash-border'
                                 }`}
@@ -120,14 +120,14 @@ export function BillSplitCard({ billId }: { billId: number }) {
             </div>
 
             {/* Admin: Mark others as paid */}
-            {isAdmin && !isSettled && bill.participants?.some((p) => p.payment_status === 'pending') && (
+            {isAdmin && !isSettled && bill.participants?.some((p) => p.payment_status === 'PENDING') && (
                 <div className="mt-3 pt-3 border-t border-dash-border">
                     <p className="text-[10px] text-dash-text-dim mb-2">
                         {t('bills.markAsPaid')} (Admin)
                     </p>
                     <div className="flex flex-wrap gap-1">
                         {bill.participants
-                            ?.filter((p) => p.payment_status === 'pending' && p.user_id !== user?.id)
+                            ?.filter((p) => p.payment_status === 'PENDING' && p.user_id !== user?.id)
                             .map((p) => (
                                 <AdminPayButton
                                     key={p.id}
@@ -151,7 +151,7 @@ function PayNowButton({ billId, groupId, userId }: { billId: number; groupId: nu
 
     const handlePay = () => {
         mutate(
-            { userId, data: { status: 'paid' } },
+            { userId, data: { status: 'PAID' } },
             {
                 onSuccess: () => showSuccessToast(t('bills.paymentStatusUpdated')),
                 onError: () => showErrorToast(t('errors.updateFailed')),
@@ -185,7 +185,7 @@ function AdminPayButton({
     const { mutate, isPending } = useUpdatePaymentStatus(billId, groupId);
 
     const handleMark = () => {
-        mutate({ userId, data: { status: 'paid' } });
+        mutate({ userId, data: { status: 'PAID' } });
     };
 
     return (

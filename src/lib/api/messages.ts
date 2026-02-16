@@ -4,13 +4,6 @@ import { apiClient } from './client';
 import type { GetMessagesParams } from '@/types/api';
 import type { Message } from '@/types/models';
 
-// Response types
-interface MessagesResponse {
-  messages: Message[];
-  limit: number;
-  offset: number;
-}
-
 // Send message request
 interface SendMessageRequest {
   content: string;
@@ -22,26 +15,24 @@ interface SendMessageRequest {
  * Get paginated messages for a group
  * @param groupId - Group ID
  * @param params - Pagination parameters
- * @returns Paginated list of messages
+ * @returns List of messages
  */
 export async function getMessages(
   groupId: number,
-  params: GetMessagesParams = {}
-): Promise<MessagesResponse> {
+  params?: GetMessagesParams
+): Promise<Message[]> {
   const queryParams = new URLSearchParams();
-  if (params.limit !== undefined) queryParams.set('limit', params.limit.toString());
-  if (params.offset !== undefined) queryParams.set('offset', params.offset.toString());
+  if (params?.limit) queryParams.set('limit', params.limit.toString());
+  if (params?.offset) queryParams.set('offset', params.offset.toString());
 
   const queryString = queryParams.toString();
-  const endpoint = `/groups/${groupId}/messages${queryString ? `?${queryString}` : ''}`;
+  const url = `/groups/${groupId}/messages${queryString ? `?${queryString}` : ''}`;
 
-  const response = await apiClient.get<MessagesResponse>(endpoint);
-  return response.data;
+  return apiClient.get<Message[]>(url);
 }
 
 /**
- * Send a message to a group via REST API
- * Note: For real-time messaging, use WebSocket instead
+ * Send a message to a group
  * @param groupId - Group ID
  * @param data - Message data
  * @returns Created message
@@ -50,9 +41,5 @@ export async function sendMessage(
   groupId: number,
   data: SendMessageRequest
 ): Promise<Message> {
-  const response = await apiClient.post<Message>(
-    `/groups/${groupId}/messages`,
-    data
-  );
-  return response.data;
+  return apiClient.post<Message>(`/groups/${groupId}/messages`, data);
 }

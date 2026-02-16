@@ -16,12 +16,11 @@ import type { User } from '@/types/models';
  * @returns User data and tokens
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>(
+  return apiClient.post<LoginResponse>(
     '/auth/login',
     credentials,
     { skipAuth: true }
   );
-  return response.data;
 }
 
 /**
@@ -30,12 +29,11 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  * @returns User data and tokens
  */
 export async function register(data: RegisterRequest): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>(
+  return apiClient.post<LoginResponse>(
     '/auth/register',
     data,
     { skipAuth: true }
   );
-  return response.data;
 }
 
 /**
@@ -45,12 +43,11 @@ export async function register(data: RegisterRequest): Promise<LoginResponse> {
  */
 export async function refreshToken(refreshToken: string): Promise<AuthTokens> {
   const request: RefreshTokenRequest = { refresh_token: refreshToken };
-  const response = await apiClient.post<AuthTokens>(
+  return apiClient.post<AuthTokens>(
     '/auth/refresh',
     request,
     { skipAuth: true }
   );
-  return response.data;
 }
 
 /**
@@ -71,6 +68,5 @@ export async function logout(): Promise<void> {
  * @returns Current user data
  */
 export async function getCurrentUser(): Promise<User> {
-  const response = await apiClient.get<User>('/users/me');
-  return response.data;
+  return apiClient.get<User>('/users/profile');
 }

@@ -23,19 +23,19 @@ export function useMessages(groupId: number, limit = DEFAULT_MESSAGE_LIMIT) {
       return response;
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
       // If we got fewer messages than the limit, there are no more pages
-      if (lastPage.messages.length < limit) {
+      if (lastPage.length < limit) {
         return undefined;
       }
       // Next offset is current offset + number of messages received
-      return lastPage.offset + lastPage.messages.length;
+      return (lastPageParam as number) + lastPage.length;
     },
     enabled: !!groupId,
     // Update chat store when data is fetched
     select: (data) => {
       // Flatten all pages into a single array of messages
-      const allMessages = data.pages.flatMap((page) => page.messages);
+      const allMessages = data.pages.flatMap((page) => page);
       return {
         ...data,
         messages: allMessages,

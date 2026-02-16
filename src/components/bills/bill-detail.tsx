@@ -38,7 +38,7 @@ export function BillDetail({ bill }: BillDetailProps) {
                         )}
                     </div>
                     <Badge
-                        variant={bill.status === 'settled' ? 'success' : 'warning'}
+                        variant={bill.status === 'SETTLED' ? 'success' : 'warning'}
                         className="ml-3"
                     >
                         {t(`bills.${bill.status}`)}

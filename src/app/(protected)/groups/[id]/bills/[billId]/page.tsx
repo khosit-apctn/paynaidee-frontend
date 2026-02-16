@@ -73,7 +73,7 @@ export default function BillDetailPage({ params }: BillDetailPageProps) {
         }
     );
 
-    const handleUpdatePaymentStatus = async (userId: number, status: 'paid' | 'pending') => {
+    const handleUpdatePaymentStatus = async (userId: number, status: 'PAID' | 'PENDING') => {
         try {
             await updatePaymentMutation.mutateAsync({
                 userId,

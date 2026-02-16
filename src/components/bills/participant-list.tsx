@@ -8,7 +8,7 @@ import type { BillParticipant } from '@/types/models';
 
 interface ParticipantListProps {
     participants: BillParticipant[];
-    onUpdateStatus?: (userId: number, status: 'paid' | 'pending') => void;
+    onUpdateStatus?: (userId: number, status: 'PAID' | 'PENDING') => void;
     canUpdate?: boolean;
 }
 
@@ -32,7 +32,7 @@ export function ParticipantList({ participants, onUpdateStatus, canUpdate = fals
     return (
         <div className="space-y-3">
             {participants.map((participant) => {
-                const isPaid = participant.payment_status === 'paid';
+                const isPaid = participant.payment_status === 'PAID';
                 const user = participant.user;
 
                 return (
@@ -70,7 +70,7 @@ export function ParticipantList({ participants, onUpdateStatus, canUpdate = fals
                             {/* Toggle button for updating status */}
                             {canUpdate && onUpdateStatus && !isPaid && (
                                 <button
-                                    onClick={() => onUpdateStatus(participant.user_id, 'paid')}
+                                    onClick={() => onUpdateStatus(participant.user_id, 'PAID')}
                                     className="text-xs px-3 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                                 >
                                     {t('bills.markAsPaid')}
@@ -94,7 +94,7 @@ export function ParticipantList({ participants, onUpdateStatus, canUpdate = fals
                 <div className="flex justify-between text-sm mt-1">
                     <span className="text-muted-foreground">{t('bills.paid')}</span>
                     <span className="font-medium text-green-600">
-                        {participants.filter(p => p.payment_status === 'paid').length}/{participants.length}
+                        {participants.filter(p => p.payment_status === 'PAID').length}/{participants.length}
                     </span>
                 </div>
             </div>

@@ -22,7 +22,7 @@ export function BillCard({ bill, onClick }: BillCardProps) {
     const t = useTranslation();
 
     const totalParticipants = bill.participants?.length || 0;
-    const paidParticipants = bill.participants?.filter(p => p.payment_status === 'paid').length || 0;
+    const paidParticipants = bill.participants?.filter(p => p.payment_status === 'PAID').length || 0;
 
     return (
         <Card
@@ -67,7 +67,7 @@ export function BillCard({ bill, onClick }: BillCardProps) {
 
                     {/* Status Badge */}
                     <Badge
-                        variant={bill.status === 'settled' ? 'success' : 'warning'}
+                        variant={bill.status === 'SETTLED' ? 'success' : 'warning'}
                         className="flex-shrink-0"
                     >
                         {t(`bills.${bill.status}`)}

@@ -30,7 +30,7 @@ export default function GroupBillsPage({ params }: GroupBillsPageProps) {
 
     const { data, isLoading, error } = useGroupBills(groupId, limit, offset);
 
-    const bills = data?.bills || [];
+    const bills = data || [];
     const hasMore = bills.length === limit;
 
     const handleBillClick = (billId: number) => {

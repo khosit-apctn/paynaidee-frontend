@@ -9,8 +9,8 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { useSendFriendRequest, useFriendshipStatus } from '@/lib/hooks/use-friends';
+
+import { useSendFriendRequest } from '@/lib/hooks/use-friends';
 import { useUIStore } from '@/lib/stores/ui-store';
 import type { User } from '@/types/models';
 
@@ -70,7 +70,7 @@ export function FriendSearch() {
         setOffset((prev) => prev + SEARCH_LIMIT);
     };
 
-    const hasMore = data && data.users.length === SEARCH_LIMIT;
+    const hasMore = data && data.length === SEARCH_LIMIT;
 
     return (
         <div className="space-y-4">
@@ -113,10 +113,10 @@ export function FriendSearch() {
                 <div className="text-center py-8">
                     <p className="text-destructive">{t('errors.loadFailed')}</p>
                 </div>
-            ) : data && data.users.length > 0 ? (
+            ) : data && data.length > 0 ? (
                 <>
                     <div className="space-y-3">
-                        {data.users.map((user) => (
+                        {data.map((user) => (
                             <UserSearchCard
                                 key={user.id}
                                 user={user}
@@ -152,50 +152,7 @@ interface UserSearchCardProps {
  */
 function UserSearchCard({ user, onSendRequest }: UserSearchCardProps) {
     const t = useTranslation();
-    const { data: friendship, isLoading: statusLoading } = useFriendshipStatus(user.id);
     const sendFriendRequest = useSendFriendRequest();
-
-    // Determine friendship status
-    const getStatusButton = () => {
-        if (statusLoading) {
-            return (
-                <Button variant="outline" size="sm" disabled>
-                    {t('common.loading')}
-                </Button>
-            );
-        }
-
-        if (!friendship) {
-            // Not connected
-            return (
-                <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => onSendRequest(user.id)}
-                    loading={sendFriendRequest.isPending}
-                >
-                    {t('friends.sendRequest')}
-                </Button>
-            );
-        }
-
-        if (friendship.status === 'pending') {
-            // Check if we sent or received the request
-            if (friendship.requester_id === user.id) {
-                // They sent us a request - show in Requests tab
-                return <Badge variant="warning">{t('friends.pendingRequests')}</Badge>;
-            } else {
-                // We sent them a request
-                return <Badge variant="warning">{t('friends.requestSent')}</Badge>;
-            }
-        }
-
-        if (friendship.status === 'accepted') {
-            return <Badge variant="success">{t('friends.title')}</Badge>;
-        }
-
-        return null;
-    };
 
     return (
         <Card>
@@ -215,7 +172,16 @@ function UserSearchCard({ user, onSendRequest }: UserSearchCardProps) {
                             @{user.username}
                         </p>
                     </div>
-                    <div className="shrink-0">{getStatusButton()}</div>
+                    <div className="shrink-0">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => onSendRequest(user.id)}
+                            loading={sendFriendRequest.isPending}
+                        >
+                            {t('friends.sendRequest')}
+                        </Button>
+                    </div>
                 </div>
             </CardBody>
         </Card>
