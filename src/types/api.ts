@@ -1,11 +1,6 @@
 // API response and request type interfaces
 
-export interface APIResponse<T> {
-  success: boolean;
-  code: string;
-  message: string;
-  data: T;
-}
+
 
 export interface PaginatedResponse<T> {
   items: T[];
@@ -81,7 +76,7 @@ export interface BillParticipantInput {
 }
 
 export interface UpdatePaymentStatusRequest {
-  status: 'paid' | 'pending';
+  status: 'PAID' | 'PENDING';
 }
 
 // Friend request types
@@ -97,7 +92,6 @@ export interface RespondFriendRequest {
 export interface UpdateProfileRequest {
   display_name?: string;
   avatar?: string;
-  phone_number?: string;
 }
 
 export interface SearchUsersParams {

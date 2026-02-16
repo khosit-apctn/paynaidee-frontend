@@ -12,7 +12,6 @@ export type {
 
 // Export all API types
 export type {
-  APIResponse,
   PaginatedResponse,
   LoginRequest,
   RegisterRequest,

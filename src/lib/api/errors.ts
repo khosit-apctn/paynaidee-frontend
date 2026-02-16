@@ -5,55 +5,53 @@ import { APIError } from './client';
 
 // Error code to i18n key mapping
 export const errorCodeToKey: Record<string, string> = {
-  // Authentication errors
-  ERR_INVALID_CREDENTIALS: 'errors.invalidCredentials',
-  ERR_UNAUTHORIZED: 'errors.unauthorized',
-  ERR_TOKEN_EXPIRED: 'errors.tokenExpired',
-  ERR_TOKEN_INVALID: 'errors.tokenInvalid',
-  ERR_REFRESH_TOKEN_EXPIRED: 'errors.refreshTokenExpired',
-  
+  // Authentication errors (matches backend registry.go)
+  INVALID_CREDENTIALS: 'errors.invalidCredentials',
+  UNAUTHORIZED: 'errors.unauthorized',
+  EXPIRED_TOKEN: 'errors.tokenExpired',
+  INVALID_TOKEN: 'errors.tokenInvalid',
+  INVALID_REFRESH_TOKEN: 'errors.refreshTokenExpired',
+
   // User errors
-  ERR_USER_NOT_FOUND: 'errors.userNotFound',
-  ERR_USER_EXISTS: 'errors.userExists',
-  ERR_EMAIL_EXISTS: 'errors.emailExists',
-  ERR_USERNAME_EXISTS: 'errors.usernameExists',
-  
+  USER_NOT_FOUND: 'errors.userNotFound',
+  DUPLICATE_USERNAME: 'errors.usernameExists',
+  DUPLICATE_EMAIL: 'errors.emailExists',
+
   // Group errors
-  ERR_GROUP_NOT_FOUND: 'errors.groupNotFound',
-  ERR_NOT_GROUP_MEMBER: 'errors.notGroupMember',
-  ERR_NOT_GROUP_ADMIN: 'errors.notGroupAdmin',
-  ERR_ALREADY_MEMBER: 'errors.alreadyMember',
-  ERR_CANNOT_REMOVE_SELF: 'errors.cannotRemoveSelf',
-  ERR_LAST_ADMIN: 'errors.lastAdmin',
-  
+  GROUP_NOT_FOUND: 'errors.groupNotFound',
+  NOT_GROUP_MEMBER: 'errors.notGroupMember',
+  INSUFFICIENT_PERMISSION: 'errors.notGroupAdmin',
+  DUPLICATE_MEMBER: 'errors.alreadyMember',
+
   // Bill errors
-  ERR_BILL_NOT_FOUND: 'errors.billNotFound',
-  ERR_INVALID_SPLIT_AMOUNT: 'errors.invalidSplitAmount',
-  ERR_BILL_ALREADY_SETTLED: 'errors.billAlreadySettled',
-  ERR_NOT_BILL_PARTICIPANT: 'errors.notBillParticipant',
-  
+  BILL_NOT_FOUND: 'errors.billNotFound',
+  BILL_ALREADY_SETTLED: 'errors.billAlreadySettled',
+  NOT_PARTICIPANT: 'errors.notBillParticipant',
+  PAYMENT_ALREADY_CONFIRMED: 'errors.paymentAlreadyConfirmed',
+
   // Friendship errors
-  ERR_FRIENDSHIP_EXISTS: 'errors.friendshipExists',
-  ERR_FRIENDSHIP_NOT_FOUND: 'errors.friendshipNotFound',
-  ERR_CANNOT_FRIEND_SELF: 'errors.cannotFriendSelf',
-  ERR_FRIEND_REQUEST_PENDING: 'errors.friendRequestPending',
-  
+  DUPLICATE_FRIENDSHIP: 'errors.friendshipExists',
+  FRIENDSHIP_NOT_FOUND: 'errors.friendshipNotFound',
+  INVALID_FRIEND_REQUEST: 'errors.cannotFriendSelf',
+
   // Permission errors
-  ERR_FORBIDDEN: 'errors.forbidden',
-  ERR_ACCESS_DENIED: 'errors.accessDenied',
-  
+  FORBIDDEN: 'errors.forbidden',
+
   // Validation errors
-  ERR_VALIDATION: 'errors.validation',
-  ERR_INVALID_INPUT: 'errors.invalidInput',
-  ERR_MISSING_FIELD: 'errors.missingField',
-  
+  VALIDATION_ERROR: 'errors.validation',
+  INVALID_INPUT: 'errors.invalidInput',
+
+  // Message errors
+  EMPTY_MESSAGE: 'errors.emptyMessage',
+  MESSAGE_TOO_LONG: 'errors.messageTooLong',
+  MESSAGE_NOT_FOUND: 'errors.messageNotFound',
+
+  // Resource errors
+  NOT_FOUND: 'errors.notFound',
+  DUPLICATE_RESOURCE: 'errors.duplicateResource',
+
   // Server errors
-  ERR_INTERNAL_ERROR: 'errors.internalError',
-  ERR_SERVICE_UNAVAILABLE: 'errors.serviceUnavailable',
-  ERR_NETWORK_ERROR: 'errors.networkError',
-  
-  // Generic
-  ERR_UNKNOWN: 'errors.unknown',
+  INTERNAL_ERROR: 'errors.internalError',
 };
 
 // Translation function type
@@ -104,10 +102,10 @@ export function isAuthError(error: unknown): boolean {
   if (!(error instanceof APIError)) return false;
   return (
     error.status === 401 ||
-    error.code === 'ERR_UNAUTHORIZED' ||
-    error.code === 'ERR_TOKEN_EXPIRED' ||
-    error.code === 'ERR_TOKEN_INVALID' ||
-    error.code === 'ERR_INVALID_CREDENTIALS'
+    error.code === 'UNAUTHORIZED' ||
+    error.code === 'EXPIRED_TOKEN' ||
+    error.code === 'INVALID_TOKEN' ||
+    error.code === 'INVALID_CREDENTIALS'
   );
 }
 
@@ -118,10 +116,9 @@ export function isForbiddenError(error: unknown): boolean {
   if (!(error instanceof APIError)) return false;
   return (
     error.status === 403 ||
-    error.code === 'ERR_FORBIDDEN' ||
-    error.code === 'ERR_ACCESS_DENIED' ||
-    error.code === 'ERR_NOT_GROUP_ADMIN' ||
-    error.code === 'ERR_NOT_GROUP_MEMBER'
+    error.code === 'FORBIDDEN' ||
+    error.code === 'INSUFFICIENT_PERMISSION' ||
+    error.code === 'NOT_GROUP_MEMBER'
   );
 }
 

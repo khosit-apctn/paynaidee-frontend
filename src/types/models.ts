@@ -9,7 +9,6 @@ export interface User {
   avatar: string;
   role: 'user' | 'admin';
   created_at: string;
-  updated_at: string;
 }
 
 export interface Group {
@@ -52,7 +51,7 @@ export interface Bill {
   total_amount: number;
   service_charge: number;
   split_type: 'equal' | 'custom';
-  status: 'pending' | 'settled';
+  status: 'PENDING' | 'SETTLED';
   qr_header: string;
   creator: User;
   group: Group;
@@ -66,11 +65,10 @@ export interface BillParticipant {
   bill_id: number;
   user_id: number;
   amount: number;
-  payment_status: 'pending' | 'paid';
+  payment_status: 'PENDING' | 'PAID';
   user: User;
   paid_at: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Friendship {
@@ -81,7 +79,6 @@ export interface Friendship {
   requester: User;
   addressee: User;
   created_at: string;
-  updated_at: string;
 }
 
 export interface QRCodeResponse {

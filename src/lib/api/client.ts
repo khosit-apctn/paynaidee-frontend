@@ -1,7 +1,7 @@
 // API Client for PayNaiDee
 // Handles HTTP requests with automatic JWT token injection and refresh
 
-import type { APIResponse } from '@/types/api';
+
 import { useI18n } from '@/lib/i18n/use-translation';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
@@ -53,8 +53,8 @@ async function refreshTokens(): Promise<boolean> {
     if (!response.ok) return false;
 
     const data = await response.json();
-    if (data.success && data.data) {
-      setTokens(data.data.access_token, data.data.refresh_token);
+    if (data.access_token && data.refresh_token) {
+      setTokens(data.access_token, data.refresh_token);
       return true;
     }
     return false;
@@ -82,7 +82,7 @@ class APIClient {
   private async request<T>(
     endpoint: string,
     options: RequestOptions = {}
-  ): Promise<APIResponse<T>> {
+  ): Promise<T> {
     const { body, skipAuth, ...fetchOptions } = options;
     const token = skipAuth ? null : getAccessToken();
 
@@ -113,20 +113,20 @@ class APIClient {
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
-      throw new APIError('ERR_UNAUTHORIZED', 'Session expired', 401);
+      throw new APIError('UNAUTHORIZED', 'Session expired', 401);
     }
 
     const data = await response.json();
 
     if (!response.ok) {
       throw new APIError(
-        data.code || 'ERR_UNKNOWN',
+        data.code || 'INTERNAL_ERROR',
         data.message || 'An error occurred',
         response.status
       );
     }
 
-    return data;
+    return data as T;
   }
 
   private async handleTokenRefresh(): Promise<boolean> {
