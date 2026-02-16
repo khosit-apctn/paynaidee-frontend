@@ -47,14 +47,34 @@
     "profile": "โปรไฟล์",
     "settings": "ตั้งค่า",
     "chat": "แชท",
-    "bills": "บิล"
+    "bills": "บิล",
+    "wallet": "กระเป๋าเงิน"
   },
   "dashboard": {
     "title": "หน้าหลัก",
     "welcome": "สวัสดี, {{name}}!",
     "recentActivity": "กิจกรรมล่าสุด",
     "quickActions": "ทางลัด",
-    "noActivity": "ไม่มีกิจกรรมล่าสุด"
+    "noActivity": "ไม่มีกิจกรรมล่าสุด",
+    "selectGroup": "เลือกกลุ่มเพื่อเริ่มแชท",
+    "searchGroups": "ค้นหากลุ่ม...",
+    "pendingPayments": "{{count}} รอชำระ",
+    "totalOwed": "ค้างจ่าย: {{amount}}",
+    "payNow": "ชำระเงิน",
+    "paidCount": "{{paid}}/{{total}} จ่ายแล้ว",
+    "qrPaymentZone": "โซนชำระเงิน QR",
+    "recentReceipts": "ใบเสร็จที่แชร์ล่าสุด",
+    "splitCalculator": "คำนวณแบ่งจ่าย",
+    "groupProfile": "โปรไฟล์กลุ่ม",
+    "manageGroup": "จัดการกลุ่ม",
+    "onlineNow": "ออนไลน์",
+    "membersOnline": "{{count}} ออนไลน์",
+    "noReceipts": "ยังไม่มีใบเสร็จ",
+    "scanPromptPay": "สแกนด้วยแอปธนาคาร",
+    "language": "ภาษา",
+    "switchLang": "TH / EN",
+    "settled": "ชำระแล้ว",
+    "allPaid": "จ่ายครบ ✓"
   },
   "groups": {
     "title": "กลุ่ม",

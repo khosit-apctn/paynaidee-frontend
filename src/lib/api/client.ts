@@ -2,6 +2,7 @@
 // Handles HTTP requests with automatic JWT token injection and refresh
 
 import type { APIResponse } from '@/types/api';
+import { useI18n } from '@/lib/i18n/use-translation';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
@@ -21,8 +22,8 @@ export class APIError extends Error {
 // Token management functions - will be connected to auth store
 let getAccessToken: () => string | null = () => null;
 let getRefreshToken: () => string | null = () => null;
-let setTokens: (accessToken: string, refreshToken: string) => void = () => {};
-let clearTokens: () => void = () => {};
+let setTokens: (accessToken: string, refreshToken: string) => void = () => { };
+let clearTokens: () => void = () => { };
 
 // Initialize token functions from auth store
 export function initializeTokenFunctions(fns: {
@@ -85,8 +86,11 @@ class APIClient {
     const { body, skipAuth, ...fetchOptions } = options;
     const token = skipAuth ? null : getAccessToken();
 
+    const locale = useI18n.getState().locale;
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept-Language': locale,
       ...(token && { Authorization: `Bearer ${token}` }),
       ...fetchOptions.headers,
     };

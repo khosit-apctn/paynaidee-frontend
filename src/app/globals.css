@@ -135,6 +135,110 @@ body {
   font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
 }
 
+/* Dashboard Dark Theme */
+:root {
+  --dash-bg: #0F0C1D;
+  --dash-surface: #1A1730;
+  --dash-surface-hover: #231F3D;
+  --dash-accent: #D4FF5B;
+  --dash-accent-dim: #B8E04E;
+  --dash-accent-glow: rgba(212, 255, 91, 0.15);
+  --dash-border: rgba(255, 255, 255, 0.06);
+  --dash-border-accent: rgba(212, 255, 91, 0.3);
+  --dash-text: #F0F0F5;
+  --dash-text-muted: #8B8BA3;
+  --dash-text-dim: #5A5A72;
+  --dash-glass-bg: rgba(26, 23, 48, 0.6);
+  --dash-glass-border: rgba(255, 255, 255, 0.08);
+  --dash-glass-blur: 16px;
+  --dash-gradient-start: #1A1730;
+  --dash-gradient-end: #0F0C1D;
+}
+
+@theme inline {
+  /* Dashboard palette */
+  --color-dash-bg: var(--dash-bg);
+  --color-dash-surface: var(--dash-surface);
+  --color-dash-surface-hover: var(--dash-surface-hover);
+  --color-dash-accent: var(--dash-accent);
+  --color-dash-accent-dim: var(--dash-accent-dim);
+  --color-dash-accent-glow: var(--dash-accent-glow);
+  --color-dash-border: var(--dash-border);
+  --color-dash-border-accent: var(--dash-border-accent);
+  --color-dash-text: var(--dash-text);
+  --color-dash-text-muted: var(--dash-text-muted);
+  --color-dash-text-dim: var(--dash-text-dim);
+  --color-dash-glass-bg: var(--dash-glass-bg);
+  --color-dash-glass-border: var(--dash-glass-border);
+
+  /* Dashboard animations */
+  --animate-dash-fade-in: dash-fade-in 0.3s ease-out;
+  --animate-dash-slide-up: dash-slide-up 0.4s ease-out;
+  --animate-dash-shimmer: dash-shimmer 2s infinite;
+  --animate-dash-pulse-glow: dash-pulse-glow 2s ease-in-out infinite;
+  --animate-dash-progress: dash-progress 1s ease-out;
+}
+
+/* Glassmorphism utility */
+.glass-card {
+  background: var(--dash-glass-bg);
+  backdrop-filter: blur(var(--dash-glass-blur));
+  -webkit-backdrop-filter: blur(var(--dash-glass-blur));
+  border: 1px solid var(--dash-glass-border);
+  border-radius: 16px;
+}
+
+.glass-card-sm {
+  background: var(--dash-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--dash-glass-border);
+  border-radius: 12px;
+}
+
+/* Dashboard keyframes */
+@keyframes dash-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dash-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dash-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes dash-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 255, 91, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(212, 255, 91, 0.15); }
+}
+
+@keyframes dash-progress {
+  from { width: 0%; }
+}
+
+/* Dashboard scrollbar */
+.dash-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dash-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dash-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--dash-text-dim);
+  border-radius: 2px;
+}
+
+.dash-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--dash-text-muted);
+}
+
 /* Focus ring utility */
 .focus-ring {
   outline: 2px solid transparent;

@@ -12,13 +12,14 @@ export interface Toast {
 }
 
 // Modal types
-export type ModalType = 
+export type ModalType =
   | 'createGroup'
   | 'editGroup'
   | 'addMember'
   | 'createBill'
   | 'confirmDelete'
   | 'qrCode'
+  | 'splitCalculator'
   | null;
 
 export interface ModalData {
@@ -27,13 +28,21 @@ export interface ModalData {
   userId?: number;
   title?: string;
   message?: string;
+  amount?: number;
+  splitType?: 'equal' | 'custom';
+  participants?: Array<{ user_id: number; amount?: number }>;
   onConfirm?: () => void;
+  [key: string]: unknown;
 }
 
 interface UIState {
   // Sidebar state
   isSidebarOpen: boolean;
   isSidebarCollapsed: boolean;
+
+  // Dashboard active selection state
+  activeGroupId: number | null;
+  activeBillId: number | null;
 
   // Modal state
   activeModal: ModalType;
@@ -51,6 +60,10 @@ interface UIState {
   closeSidebar: () => void;
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+
+  // Dashboard selection actions
+  setActiveGroupId: (id: number | null) => void;
+  setActiveBillId: (id: number | null) => void;
 
   // Modal actions
   openModal: (modal: ModalType, data?: ModalData) => void;
@@ -77,6 +90,8 @@ export const useUIStore = create<UIState>((set) => ({
   // Initial state
   isSidebarOpen: false,
   isSidebarCollapsed: false,
+  activeGroupId: null,
+  activeBillId: null,
   activeModal: null,
   modalData: null,
   toasts: [],
@@ -88,6 +103,10 @@ export const useUIStore = create<UIState>((set) => ({
   closeSidebar: () => set({ isSidebarOpen: false }),
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
+
+  // Dashboard selection actions
+  setActiveGroupId: (id) => set({ activeGroupId: id, activeBillId: null }),
+  setActiveBillId: (id) => set({ activeBillId: id }),
 
   // Modal actions
   openModal: (modal, data) =>

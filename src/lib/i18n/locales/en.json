@@ -47,14 +47,34 @@
     "profile": "Profile",
     "settings": "Settings",
     "chat": "Chat",
-    "bills": "Bills"
+    "bills": "Bills",
+    "wallet": "Wallet"
   },
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome, {{name}}!",
     "recentActivity": "Recent Activity",
     "quickActions": "Quick Actions",
-    "noActivity": "No recent activity"
+    "noActivity": "No recent activity",
+    "selectGroup": "Select a group to start chatting",
+    "searchGroups": "Search groups...",
+    "pendingPayments": "{{count}} Pending",
+    "totalOwed": "Owed: {{amount}}",
+    "payNow": "Pay Now",
+    "paidCount": "{{paid}}/{{total}} paid",
+    "qrPaymentZone": "QR Payment Zone",
+    "recentReceipts": "Recent Shared Receipts",
+    "splitCalculator": "Split Calculator",
+    "groupProfile": "Group Profile",
+    "manageGroup": "Manage Group",
+    "onlineNow": "Online",
+    "membersOnline": "{{count}} online",
+    "noReceipts": "No receipts yet",
+    "scanPromptPay": "Scan with banking app",
+    "language": "Language",
+    "switchLang": "TH / EN",
+    "settled": "Settled",
+    "allPaid": "All Paid ✓"
   },
   "groups": {
     "title": "Groups",

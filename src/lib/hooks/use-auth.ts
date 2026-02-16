@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { login, register, logout } from '@/lib/api/auth';
+import { login, register, logout, getCurrentUser } from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import type { LoginRequest, RegisterRequest } from '@/types/api';
 
@@ -17,12 +17,18 @@ export const authKeys = {
 export function useLogin() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const setTokens = useAuthStore((state) => state.setTokens);
 
   return useMutation({
     mutationFn: (credentials: LoginRequest) => login(credentials),
-    onSuccess: (data) => {
-      // Store user and tokens in auth store
-      setAuth(data.user, data.access_token, data.refresh_token);
+    onSuccess: async (data) => {
+      // Save tokens first so subsequent API calls are authenticated
+      setTokens(data.access_token, data.refresh_token);
+
+      // Backend may not return user — fetch it separately
+      const user = data.user ?? await getCurrentUser();
+      setAuth(user, data.access_token, data.refresh_token);
+
       // Redirect to dashboard
       router.push('/dashboard');
     },
@@ -36,12 +42,18 @@ export function useLogin() {
 export function useRegister() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const setTokens = useAuthStore((state) => state.setTokens);
 
   return useMutation({
     mutationFn: (data: RegisterRequest) => register(data),
-    onSuccess: (data) => {
-      // Store user and tokens in auth store
-      setAuth(data.user, data.access_token, data.refresh_token);
+    onSuccess: async (data) => {
+      // Save tokens first so subsequent API calls are authenticated
+      setTokens(data.access_token, data.refresh_token);
+
+      // Backend may not return user — fetch it separately
+      const user = data.user ?? await getCurrentUser();
+      setAuth(user, data.access_token, data.refresh_token);
+
       // Redirect to dashboard
       router.push('/dashboard');
     },
