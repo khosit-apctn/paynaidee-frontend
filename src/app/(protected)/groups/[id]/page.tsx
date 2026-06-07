@@ -1,30 +1,48 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
-import { useGroup } from '@/lib/hooks/use-groups';
+import { useGroup, useGroupBalances, useSettleWithCreditor } from '@/lib/hooks/use-groups';
+import { useGroupBills } from '@/lib/hooks/use-bills';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import { MemberList } from '@/components/groups/member-list';
+import { BillCard } from '@/components/bills/bill-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
+
+import { Modal } from '@/components/ui/modal';
+import { QRCodeDisplay } from '@/components/bills/qr-code-display';
+import { ChatContainer } from '@/components/chat/chat-container';
+import { generatePromptPayPayload } from '@/lib/utils/promptpay';
+import { showSuccessToast, showErrorToast } from '@/lib/stores/ui-store';
+import { formatThaiCurrency } from '@/lib/utils/currency';
 
 interface GroupDetailPageProps {
     params: Promise<{ id: string }>;
 }
 
+type TabType = 'summary' | 'bills' | 'chat';
+
 /**
  * Group Detail Page
- * Displays group information with tabs for members/bills/chat
+ * Tabs: Summary (balances), Bills, Chat
+ * Balances: real data from GET /groups/:id/balances
  */
 export default function GroupDetailPage({ params }: GroupDetailPageProps) {
     const { id } = use(params);
     const groupId = parseInt(id, 10);
     const t = useTranslation();
     const { user } = useAuthStore();
+    const [activeTab, setActiveTab] = useState<TabType>('summary');
+    const [settleCreditor, setSettleCreditor] = useState<{ id: number; name: string; amount: number } | null>(null);
+
     const { data: group, isLoading, error } = useGroup(groupId);
+    const { data: balances, isLoading: balancesLoading } = useGroupBalances(groupId);
+    const { data: bills, isLoading: billsLoading } = useGroupBills(groupId);
+    const settleMutation = useSettleWithCreditor(groupId);
 
     // Check if current user is admin
     const currentUserMember = group?.members?.find(m => m.user_id === user?.id);
@@ -57,6 +75,58 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             </div>
         );
     }
+
+    const tabs: { id: TabType; label: string }[] = [
+        { id: 'summary', label: '📊 สรุป' },
+        { id: 'bills', label: '🧾 บิล' },
+        { id: 'chat', label: `💬 ${t('nav.chat')}` },
+    ];
+
+    // Calculate my balance from the balances response
+    const myOwed = balances?.filter(b => b.debtor_id === user?.id)
+        .reduce((sum, b) => sum + b.amount, 0) ?? 0;
+
+    // Calculate total group expenses and user paid share dynamically
+    const totalExpenses = bills?.reduce((sum, b) => sum + Number(b.total_amount), 0) ?? 0;
+    const myPaid = bills?.reduce((sum, b) => {
+        const myPart = b.participants?.find(p => p.user_id === user?.id);
+        if (myPart && myPart.payment_status === 'PAID') {
+            return sum + Number(myPart.amount);
+        }
+        return sum;
+    }, 0) ?? 0;
+
+    const handleOpenSettleModal = (creditorId: number, creditorName: string, amount: number) => {
+        setSettleCreditor({ id: creditorId, name: creditorName, amount });
+    };
+
+    const handleConfirmSettle = async () => {
+        if (!settleCreditor) return;
+        try {
+            await settleMutation.mutateAsync(settleCreditor.id);
+            showSuccessToast('เคลียร์ยอดเงินสำเร็จแล้ว');
+            setSettleCreditor(null);
+        } catch (err: any) {
+            showErrorToast('เคลียร์ยอดเงินล้มเหลว', err.message || 'กรุณาลองใหม่อีกครั้ง');
+        }
+    };
+
+    // Find creditor user's phone number for PromptPay QR code
+    const creditorMember = group?.members?.find(m => m.user_id === settleCreditor?.id);
+    const creditorPhone = creditorMember?.user?.phone_number;
+
+    let qrData = '';
+    let qrError = '';
+    if (settleCreditor && creditorPhone) {
+        try {
+            qrData = generatePromptPayPayload(creditorPhone, settleCreditor.amount, `${group.name} Settle`);
+        } catch (e: any) {
+            qrError = e.message || 'ไม่สามารถสร้างข้อมูล PromptPay ได้';
+        }
+    } else if (settleCreditor) {
+        qrError = 'ผู้รับเงินยังไม่ได้ตั้งค่าเบอร์โทรศัพท์สำหรับรับเงิน PromptPay';
+    }
+
 
     return (
         <div className="space-y-6">
@@ -101,29 +171,216 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                         {t('nav.chat')}
                     </Button>
                 </Link>
-                <Link href={`/groups/${groupId}/bills`}>
-                    <Button variant="outline" size="md">
+                <Link href={`/groups/${groupId}/bills/new`}>
+                    <Button variant="primary" size="md">
                         <svg className="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        {t('nav.bills')}
+                        สร้างบิล
                     </Button>
                 </Link>
             </div>
 
-            {/* Members Section */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('groups.members')}</CardTitle>
-                </CardHeader>
-                <CardBody>
-                    <MemberList
-                        groupId={groupId}
-                        members={group.members || []}
-                        isAdmin={isAdmin}
-                    />
-                </CardBody>
-            </Card>
+            {/* Tabs */}
+            <div className="tabs">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`tab ${activeTab === tab.id ? 'active' : ''}`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Tab Content */}
+            <div>
+                {/* Summary Tab — real balances */}
+                {activeTab === 'summary' && (
+                    <div className="space-y-4">
+                        {/* Stats Grid from Mockup */}
+                        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                            <div className="stat-card purple !min-h-0 !p-3">
+                                <span className="stat-label text-xs">ค่าใช้จ่ายรวม</span>
+                                <span className="stat-value text-base sm:text-lg mt-1 font-bold">
+                                    {formatThaiCurrency(totalExpenses)}
+                                </span>
+                            </div>
+                            <div className="stat-card amber !min-h-0 !p-3">
+                                <span className="stat-label text-xs">ยอดค้างจ่ายคุณ</span>
+                                <span className="stat-value text-base sm:text-lg mt-1 font-bold text-amber-400">
+                                    {formatThaiCurrency(myOwed)}
+                                </span>
+                            </div>
+                            <div className="stat-card green !min-h-0 !p-3">
+                                <span className="stat-label text-xs">คุณจ่ายแล้ว</span>
+                                <span className="stat-value text-base sm:text-lg mt-1 font-bold text-emerald-400">
+                                    {formatThaiCurrency(myPaid)}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* My balance summary card */}
+                        {myOwed > 0 && (
+                            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-4 flex items-center gap-3">
+                                <div className="text-2xl">💸</div>
+                                <div>
+                                    <p className="text-sm text-amber-400 font-medium">ยอดที่คุณต้องจ่าย</p>
+                                    <p className="text-xl font-bold text-amber-300">฿{myOwed.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Balance list */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>ใครค้างใคร</CardTitle>
+                            </CardHeader>
+                            <CardBody>
+                                {balancesLoading ? (
+                                    <div className="space-y-3">
+                                        {[1, 2, 3].map(i => (
+                                            <Skeleton key={i} className="h-14 w-full" />
+                                        ))}
+                                    </div>
+                                ) : balances && balances.length > 0 ? (
+                                    <div className="divide-y divide-border">
+                                        {balances.map((entry, idx) => (
+                                            <div key={idx} className="py-3 flex items-center justify-between">
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <span className="font-medium text-foreground">
+                                                        {entry.debtor_id === user?.id ? 'คุณ' : entry.debtor_name}
+                                                    </span>
+                                                    <span className="text-muted-foreground">ค้าง</span>
+                                                    <span className="font-medium text-foreground">
+                                                        {entry.creditor_id === user?.id ? 'คุณ' : entry.creditor_name}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`font-semibold ${entry.debtor_id === user?.id ? 'text-amber-400' : 'text-emerald-400'}`}>
+                                                        ฿{entry.amount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}
+                                                    </span>
+                                                    {/* Settle Up: opens PromptPay modal */}
+                                                    {entry.debtor_id === user?.id && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                            onClick={() => handleOpenSettleModal(entry.creditor_id, entry.creditor_name, entry.amount)}
+                                                        >
+                                                            เคลียร์เงิน
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8">
+                                        <div className="text-4xl mb-2">✅</div>
+                                        <p className="text-muted-foreground text-sm">ทุกอย่างเคลียร์แล้ว!</p>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
+                    </div>
+                )}
+
+                {/* Bills Tab */}
+                {activeTab === 'bills' && (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground">
+                                บิลทั้งหมด ({bills?.length ?? 0} บิล)
+                            </p>
+                            <Link href={`/groups/${groupId}/bills/new`}>
+                                <Button size="sm" variant="primary">+ สร้างบิล</Button>
+                            </Link>
+                        </div>
+                        {billsLoading ? (
+                            <div className="space-y-3">
+                                {[1, 2, 3].map(i => (
+                                    <Skeleton key={i} className="h-24 w-full" />
+                                ))}
+                            </div>
+                        ) : bills && bills.length > 0 ? (
+                            <div className="space-y-3">
+                                {bills.map((bill) => (
+                                    <Link key={bill.id} href={`/groups/${groupId}/bills/${bill.id}`}>
+                                        <BillCard bill={bill} />
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <p className="text-muted-foreground">ยังไม่มีบิล</p>
+                                <Link href={`/groups/${groupId}/bills/new`}>
+                                    <Button variant="primary" size="md" className="mt-4">
+                                        สร้างบิลแรก
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Chat Tab */}
+                {activeTab === 'chat' && (
+                    <div className="rounded-xl border border-border overflow-hidden bg-background">
+                        <ChatContainer
+                            groupId={groupId}
+                            className="h-[500px]"
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Settle Up PromptPay Modal */}
+            <Modal
+                isOpen={!!settleCreditor}
+                onClose={() => setSettleCreditor(null)}
+                title="สแกนเพื่อจ่ายเงิน (PromptPay)"
+            >
+                {settleCreditor && (
+                    <div className="space-y-6">
+                        {qrError ? (
+                            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-center text-sm">
+                                {qrError}
+                            </div>
+                        ) : qrData ? (
+                            <QRCodeDisplay
+                                qrData={qrData}
+                                amount={settleCreditor.amount}
+                                header={`จ่ายเงินให้ ${settleCreditor.name}`}
+                            />
+                        ) : (
+                            <div className="flex justify-center py-8">
+                                <Spinner size="lg" />
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                            <Button
+                                variant="primary"
+                                onClick={handleConfirmSettle}
+                                disabled={settleMutation.isPending}
+                                className="w-full justify-center"
+                            >
+                                {settleMutation.isPending ? 'กำลังบันทึก...' : 'ฉันโอนเงินแล้ว (ยืนยันการเคลียร์ยอด)'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => setSettleCreditor(null)}
+                                className="w-full justify-center"
+                            >
+                                {t('common.cancel')}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }
+

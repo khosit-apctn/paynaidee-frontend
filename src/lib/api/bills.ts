@@ -49,7 +49,11 @@ export async function createBill(
   groupId: number,
   data: CreateBillRequest
 ): Promise<Bill> {
-  return apiClient.post<Bill>(`/groups/${groupId}/bills`, data);
+  const payload = {
+    ...data,
+    group_id: groupId,
+  };
+  return apiClient.post<Bill>(`/groups/${groupId}/bills`, payload);
 }
 
 /**

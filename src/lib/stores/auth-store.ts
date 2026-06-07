@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/types/models';
+import { initializeTokenFunctions } from '@/lib/api/client';
 
 interface AuthState {
   // State
@@ -29,20 +30,28 @@ export const useAuthStore = create<AuthState>()(
       isHydrated: false,
 
       // Set full auth state after login
-      setAuth: (user, accessToken, refreshToken) =>
+      setAuth: (user, accessToken, refreshToken) => {
+        if (typeof window !== 'undefined') {
+          document.cookie = `access_token=${accessToken}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+        }
         set({
           user,
           accessToken,
           refreshToken,
           isAuthenticated: true,
-        }),
+        });
+      },
 
       // Update tokens only (for refresh)
-      setTokens: (accessToken, refreshToken) =>
+      setTokens: (accessToken, refreshToken) => {
+        if (typeof window !== 'undefined') {
+          document.cookie = `access_token=${accessToken}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
+        }
         set({
           accessToken,
           refreshToken,
-        }),
+        });
+      },
 
       // Update user profile data
       updateUser: (userData) =>
@@ -51,13 +60,17 @@ export const useAuthStore = create<AuthState>()(
         })),
 
       // Clear all auth state on logout
-      clearAuth: () =>
+      clearAuth: () => {
+        if (typeof window !== 'undefined') {
+          document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+        }
         set({
           user: null,
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
-        }),
+        });
+      },
 
       // Mark store as hydrated from storage
       setHydrated: (hydrated) => set({ isHydrated: hydrated }),
@@ -100,3 +113,11 @@ export const isAuthenticated = (): boolean => {
 export const getCurrentUser = (): User | null => {
   return useAuthStore.getState().user;
 };
+
+// Initialize API client token functions to prevent authorization token issues
+initializeTokenFunctions({
+  getAccessToken,
+  getRefreshToken,
+  setTokens: (accessToken, refreshToken) => useAuthStore.getState().setTokens(accessToken, refreshToken),
+  clearTokens,
+});

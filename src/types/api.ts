@@ -61,6 +61,7 @@ export interface UpdateMemberRoleRequest {
 
 // Bill request types
 export interface CreateBillRequest {
+  group_id?: number;
   title: string;
   description?: string;
   total_amount: number;

@@ -70,6 +70,15 @@ export function ProfileForm({ onSuccess, onCancel }: ProfileFormProps) {
         },
     });
 
+    const formatToE164 = (phone: string): string => {
+        if (!phone) return '';
+        const trimmed = phone.trim();
+        if (/^0\d{9}$/.test(trimmed)) {
+            return `+66${trimmed.substring(1)}`;
+        }
+        return trimmed;
+    };
+
     const onSubmit = (data: UpdateProfileInput) => {
         // Only send non-empty fields
         const payload: UpdateProfileInput = {};
@@ -80,11 +89,12 @@ export function ProfileForm({ onSuccess, onCancel }: ProfileFormProps) {
             payload.avatar = data.avatar.trim();
         }
         if (data.phone_number && data.phone_number.trim()) {
-            payload.phone_number = data.phone_number.trim();
+            payload.phone_number = formatToE164(data.phone_number);
         }
 
         updateProfileMutation(payload);
     };
+
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

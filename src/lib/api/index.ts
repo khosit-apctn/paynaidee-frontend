@@ -37,7 +37,9 @@ export {
   addMember,
   updateMemberRole,
   removeMember,
+  getGroupBalances,
 } from './groups';
+export type { BalanceEntry } from './groups';
 
 // Bills API
 export {
@@ -55,6 +57,7 @@ export { getMessages, sendMessage } from './messages';
 // Friends API
 export {
   getFriends,
+  getPendingFriendRequests,
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,

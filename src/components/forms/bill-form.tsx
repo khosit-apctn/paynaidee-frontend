@@ -119,12 +119,12 @@ export function BillForm({ groupMembers, onSubmit, isSubmitting = false }: BillF
 
             {/* Description */}
             <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
                     {t('bills.description')} ({t('common.optional')})
                 </label>
                 <textarea
                     {...register('description')}
-                    className="w-full min-h-20 px-3 py-2 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full min-h-[80px] px-3.5 py-2.5 rounded-xl input-glass text-sm text-[var(--text-primary)] focus:outline-none"
                     placeholder={t('bills.descriptionPlaceholder')}
                 />
                 {errors.description && (
@@ -198,10 +198,10 @@ export function BillForm({ groupMembers, onSubmit, isSubmitting = false }: BillF
 
             {/* Participant Selection */}
             <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">
                     {t('bills.selectParticipants')}
                 </label>
-                <div className="space-y-2 max-h-64 overflow-y-auto border border-border rounded-md p-3">
+                <div className="space-y-2.5 max-h-64 overflow-y-auto rounded-xl p-3.5 glass-inset">
                     {groupMembers.map((member) => (
                         <div key={member.user_id} className="flex items-center gap-3">
                             <input

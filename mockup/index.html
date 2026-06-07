@@ -1,0 +1,2991 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayNaiDee — Ultimate Interactive Mockup</title>
+<meta name="description" content="PayNaiDee (เปย์ไหนดี) — แอปแชร์ค่าใช้จ่ายกับเพื่อน">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ========== RESET & BASE ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Sarabun', 'Inter', system-ui, -apple-system, sans-serif;
+  background: #080b16;
+  color: #e2e8f0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ========== DESIGN TOKENS ========== */
+:root {
+  --bg-primary: #080b16;
+  --bg-secondary: #0c0f1a;
+  --bg-surface: #111627;
+  --bg-surface-hover: #161c33;
+  --bg-elevated: #1a2140;
+  --border: rgba(255,255,255,0.06);
+  --border-accent: rgba(99,102,241,0.3);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --accent-glow: rgba(99,102,241,0.15);
+  --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --success: #10b981;
+  --success-bg: rgba(16,185,129,0.1);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245,158,11,0.1);
+  --error: #ef4444;
+  --error-bg: rgba(239,68,68,0.1);
+  --glass: rgba(17,22,39,0.6);
+  --glass-border: rgba(255,255,255,0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --sidebar-width: 72px;
+  --sidebar-expanded: 240px;
+  --bottombar-height: 68px;
+}
+
+/* Darker theme helper for Toggle states */
+body.alt-theme {
+  --bg-primary: #04060b;
+  --bg-secondary: #080a12;
+  --bg-surface: #0c0f1d;
+  --bg-surface-hover: #11152a;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes toastIn { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+.animate-in { animation: fadeIn 0.4s ease-out; }
+.animate-slide { animation: slideUp 0.5s ease-out; }
+.animate-scale { animation: scaleIn 0.3s ease-out; }
+
+/* ========== TOAST NOTIFICATION ========== */
+.toast-container {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17, 25, 48, 0.95);
+  border: 1px solid var(--accent-light);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 9999;
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+/* ========== INTERACTIVE BOTTOM SHEET & MODAL ========== */
+.bottom-sheet-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(4, 6, 12, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.bottom-sheet-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bottom-sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: #0f1322;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  max-height: 85vh;
+  overflow-y: auto;
+  z-index: 1000;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.bottom-sheet.open {
+  transform: translateY(0);
+}
+.bottom-sheet-handle {
+  width: 40px; height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+  margin: -12px auto 16px auto;
+  cursor: pointer;
+}
+
+/* ========== AUTH PAGES ========== */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at top, #111835, #080b16 70%);
+  position: relative;
+  overflow: hidden;
+}
+.auth-page::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%);
+  top: -200px; right: -100px;
+  pointer-events: none;
+}
+.auth-page::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+  bottom: -100px; left: -100px;
+  pointer-events: none;
+}
+.auth-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+  animation: scaleIn 0.5s ease-out;
+}
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  justify-content: center;
+}
+.auth-logo-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--accent-gradient);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #fff; font-weight: 800;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.3);
+}
+.auth-logo-text { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.auth-title { text-align: center; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.auth-subtitle { text-align: center; font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; }
+
+.form-group { margin-bottom: 18px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.form-input:disabled {
+  background: rgba(255,255,255,0.02);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  opacity: 0.8;
+  border-color: var(--border);
+}
+.form-input::placeholder { color: var(--text-muted); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 24px;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #fff;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+.btn-ghost {
+  background: transparent;
+  color: var(--accent-light);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--accent-glow); border-color: var(--border-accent); }
+.btn-danger-ghost {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.btn-danger-ghost:hover { background: var(--error-bg); border-color: rgba(239, 68, 68, 0.4); }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.btn-icon {
+  width: 36px; height: 36px; padding: 0;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.btn-icon:hover { background: var(--accent-glow); color: var(--accent-light); border-color: var(--border-accent); }
+
+.auth-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-secondary); }
+.auth-link a { color: var(--accent-light); text-decoration: none; font-weight: 500; }
+.auth-link a:hover { text-decoration: underline; }
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 24px 0; font-size: 12px; color: var(--text-muted);
+}
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ========== APP LAYOUT ========== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar (Desktop) */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar:hover { width: var(--sidebar-expanded); }
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.sidebar-logo-icon {
+  min-width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--accent-gradient);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: #fff; font-weight: 800;
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.sidebar-logo-text {
+  font-size: 18px; font-weight: 700; color: var(--text-primary);
+  opacity: 0; transition: opacity 0.2s;
+}
+.sidebar:hover .sidebar-logo-text { opacity: 1; }
+
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 0 10px; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+.sidebar-item.active {
+  background: var(--accent-glow);
+  color: var(--accent-light);
+}
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 20px;
+  background: var(--accent-gradient);
+  border-radius: 0 3px 3px 0;
+}
+.sidebar-item-icon { min-width: 24px; font-size: 18px; text-align: center; }
+.sidebar-item-text { font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.2s; }
+.sidebar:hover .sidebar-item-text { opacity: 1; }
+.sidebar-badge {
+  min-width: 18px; height: 18px;
+  background: var(--error);
+  border-radius: 9px;
+  font-size: 10px; font-weight: 700; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.sidebar:hover .sidebar-badge { opacity: 1; }
+
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+}
+.sidebar-user:hover { background: rgba(255,255,255,0.04); }
+.sidebar-avatar {
+  min-width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; color: #fff;
+}
+.sidebar-user-info { opacity: 0; transition: opacity 0.2s; }
+.sidebar:hover .sidebar-user-info { opacity: 1; }
+.sidebar-user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.sidebar-user-role { font-size: 11px; color: var(--text-muted); }
+
+/* Bottom Tab Bar (Mobile) */
+.bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--bottombar-height);
+  background: rgba(12,15,26,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.bottom-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-muted);
+  text-decoration: none;
+  position: relative;
+}
+.bottom-tab.active { color: var(--accent-light); }
+.bottom-tab-icon { font-size: 20px; }
+.bottom-tab-label { font-size: 10px; font-weight: 500; }
+.bottom-tab-fab {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; color: #fff;
+  margin-top: -16px;
+  box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.bottom-tab-fab:hover { transform: scale(1.1); }
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+}
+.page {
+  display: none;
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+}
+.page.active { display: block; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+.page-title { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.page-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+.page-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--text-secondary);
+  cursor: pointer; margin-bottom: 16px;
+  transition: color 0.2s;
+}
+.page-back:hover { color: var(--accent-light); }
+
+/* ========== CARDS ========== */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: all 0.2s;
+  position: relative;
+}
+.card:hover { border-color: var(--glass-border); background: var(--bg-surface-hover); }
+
+/* ========== STAT CARDS ========== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card-full {
+  grid-column: span 2;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.stat-card-full::after, .stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  filter: blur(45px);
+  opacity: 0.15;
+  pointer-events: none;
+}
+.stat-card-full.purple::after { background: #6366f1; }
+.stat-card-full.green::after { background: #10b981; }
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 104px;
+}
+.stat-card.amber::after { background: #f59e0b; }
+.stat-card.pink::after { background: #ec4899; }
+.stat-card.purple::after { background: #6366f1; }
+.stat-card.green::after { background: #10b981; }
+.stat-card:hover, .stat-card-full:hover { transform: translateY(-2px); border-color: var(--glass-border); }
+
+/* ========== EMOJI ICON BOXES ========== */
+.emoji-icon-box {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.emoji-icon-box.purple { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); color: #818cf8; }
+.emoji-icon-box.green { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+.emoji-icon-box.amber { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); color: #fbbf24; }
+.emoji-icon-box.pink { background: rgba(236,72,153,0.12); border: 1px solid rgba(236,72,153,0.25); color: #f472b6; }
+.emoji-icon-box.cyan { background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25); color: #22d3ee; }
+
+.stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.stat-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+.stat-change { font-size: 11px; margin-top: 6px; font-weight: 600; display: inline-block; padding: 2px 8px; border-radius: 20px;}
+.stat-change.down { color: var(--error); background: var(--error-bg); }
+.stat-change.up { color: var(--success); background: var(--success-bg); }
+
+/* ========== LIST ITEMS ========== */
+.list-item {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.list-item:hover { background: var(--bg-surface-hover); border-color: var(--border); }
+.list-content-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.list-info { flex: 1; min-width: 0; }
+.list-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.list-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-meta { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;}
+.list-amount { font-size: 15px; font-weight: 700; }
+.list-desc-clear { color: var(--success) !important; font-weight: 600; }
+
+/* Activity Specific Row Layout */
+.activity-row { display: flex; align-items: flex-start; justify-content: space-between; width: 100%; }
+.activity-time-tag { font-size: 11px; color: var(--text-secondary); background: rgba(255,255,255,0.04); padding: 2px 8px; border-radius: 6px; white-space: nowrap; border: 1px solid var(--border); }
+
+/* ========== BADGES ========== */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.badge-pending { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+.badge-paid { background: rgba(16,185,129,0.1); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+.badge-settled { background: rgba(99,102,241,0.1); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.2); }
+.badge-admin { background: rgba(236,72,153,0.1); color: #f472b6; border: 1px solid rgba(236,72,153,0.2); }
+.badge-member { background: rgba(255,255,255,0.06); color: var(--text-secondary); border: 1px solid var(--border); }
+
+/* ========== TABS ========== */
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.tab {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+.tab.active { background: var(--accent-gradient); color: #fff; }
+.tab:not(.active):hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+
+/* ========== CHAT ========== */
+.chat-container { display: flex; flex-direction: column; height: calc(100vh - 250px); min-height: 400px; }
+.chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.chat-msg { display: flex; gap: 10px; max-width: 75%; animation: fadeIn 0.3s ease-out forwards; }
+.chat-msg.sent { margin-left: auto; flex-direction: row-reverse; }
+.chat-msg-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+  flex-shrink: 0;
+}
+.chat-msg-bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.chat-msg:not(.sent) .chat-msg-bubble {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.chat-msg.sent .chat-msg-bubble {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.chat-msg.sent .chat-msg-time { text-align: right; }
+.chat-input-bar {
+  display: flex; gap: 10px;
+  padding: 16px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.chat-input {
+  flex: 1;
+  padding: 10px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-send {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
+}
+.chat-send:hover { transform: scale(1.1); }
+
+/* ========== SEARCH ========== */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.search-icon { color: var(--text-muted); font-size: 16px; }
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+/* ========== PROFILE ========== */
+.profile-header {
+  text-align: center;
+  padding: 32px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.profile-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  background: var(--accent-gradient);
+  opacity: 0.15;
+}
+.profile-avatar-lg {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: #fff;
+  margin: 0 auto 16px;
+  position: relative;
+  border: 3px solid var(--bg-surface);
+}
+.profile-name { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.profile-email { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+
+.setting-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.setting-item:hover { background: var(--bg-surface-hover); }
+.setting-item:last-child { border-bottom: none; }
+.setting-left { display: flex; align-items: center; gap: 12px; }
+.setting-icon { font-size: 18px; }
+.setting-text { font-size: 14px; color: var(--text-primary); }
+.setting-arrow { color: var(--text-muted); font-size: 14px; }
+
+/* ========== TOGGLE ========== */
+.toggle {
+  width: 44px; height: 24px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: '';
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+  top: 2px; left: 2px;
+  transition: transform 0.3s;
+}
+.toggle.on::after { transform: translateX(20px); }
+
+/* ========== DYNAMIC BILL CALCULATOR & UI ========== */
+.split-list-container {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 12px;
+}
+.split-member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.split-member-row:last-child { margin-bottom: 0; }
+.split-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  width: 120px;
+}
+.split-input-wrapper input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: right;
+  outline: none;
+}
+.split-input-wrapper span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-right: 4px;
+}
+.calculator-validation {
+  font-size: 13px;
+  margin-top: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ========== BALANCE FLOW (UX/UI REDESIGN) ========== */
+.balance-flow-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.balance-row:last-child { border-bottom: none; }
+.balance-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.balance-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+}
+.balance-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.balance-tag.owe { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245,158,11,0.2); }
+.balance-tag.owed { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+.balance-tag.settled { background: rgba(255,255,255,0.06); color: var(--text-secondary); border: 1px solid var(--border); }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .bottom-bar { display: block; }
+  .main-content { margin-left: 0; padding-bottom: var(--bottombar-height); }
+  .page { padding: 20px 16px; }
+  .page-title { font-size: 20px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stat-card { min-height: 96px; padding: 14px 16px; }
+  .stat-value { font-size: 22px; }
+  .auth-card { margin: 16px; padding: 28px 24px; }
+}
+@media (max-width: 480px) {
+  .friend-request-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .friend-request-row .friend-request-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+  }
+}
+
+.section-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.section-link { font-size: 13px; font-weight: 500; color: var(--accent-light); cursor: pointer; }
+.bill-split-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+.split-option { flex: 1; padding: 10px; text-align: center; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: var(--text-secondary); }
+.split-option.active { border-color: var(--accent); background: var(--accent-glow); color: var(--accent-light); }
+.member-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.member-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 20px; font-size: 13px; }
+.member-chip-avatar { width: 20px; height: 20px; border-radius: 50%; font-size: 8px; font-weight: 600; color: #fff; display: flex; align-items: center; justify-content: center; }
+.member-chip-remove { width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; color: var(--text-muted); }
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* Progress bar inside detail */
+.bill-progress {
+  height: 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+.bill-progress-bar {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+.participant-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.participant-row:last-child { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<!-- Toast Alert Layer -->
+<div id="toast-wrapper"></div>
+
+<!-- Bill Bottom Sheet Detail View -->
+<div id="bill-bottom-sheet-backdrop" class="bottom-sheet-backdrop" onclick="closeBillSheet()"></div>
+<div id="bill-bottom-sheet" class="bottom-sheet">
+  <div class="bottom-sheet-handle" onclick="closeBillSheet()"></div>
+  
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h3 id="sheet-bill-title" style="font-size:20px; font-weight:700; color:var(--text-primary);">ชื่อบิล</h3>
+    <span id="sheet-bill-status" class="badge badge-pending">รอจ่าย</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+    <div style="padding:14px; background:var(--bg-primary); border: 1px solid var(--border); border-radius:var(--radius-md); text-align:center;">
+      <span style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;">ยอดค้างชำระของคุณ</span>
+      <div id="sheet-bill-amount" style="font-size:24px; font-weight:700; color:#fbbf24;">฿0</div>
+    </div>
+    <div style="padding:14px; background:var(--bg-primary); border: 1px solid var(--border); border-radius:var(--radius-md); text-align:center;">
+      <span style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;">กลุ่ม / ข้อมูล</span>
+      <div id="sheet-bill-group" style="font-size:14px; font-weight:600; color:var(--text-primary); margin-top:8px;">กลุ่ม</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px; padding: 16px;">
+    <div class="section-title" style="margin-bottom:12px;">ความคืบหน้าของบิลนี้</div>
+    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+      <span style="color:var(--text-secondary);">สถานะรวมในกลุ่ม</span>
+      <span id="sheet-bill-percent-text" style="color:var(--accent-light); font-weight:600;">3/5 คนจ่ายแล้ว (60%)</span>
+    </div>
+    <div class="bill-progress">
+      <div id="sheet-bill-progress-bar" class="bill-progress-bar" style="width:60%;"></div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center; padding: 20px;">
+    <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:12px;">สแกนผ่านแอปธนาคารเพื่อจ่ายเงิน</div>
+    <div style="width:160px; height:160px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; border: 8px solid #fff;">
+      <!-- Styled mock QR -->
+      <div style="width:100%; height:100%; background: repeating-conic-gradient(from 45deg, #000 0% 25%, #fff 0% 50%) 50% / 20px 20px;"></div>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted);">PromptPay: 081-234-5678 (สมชาย ใจดี)</p>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="btn btn-primary btn-sm" style="flex:1; border-radius:6px;" onclick="confirmBillPayment()">แจ้งยืนยันการโอนเงิน</button>
+      <button class="btn btn-ghost btn-sm" style="border-radius:6px;" onclick="closeBillSheet()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settle Up (เคลียร์เงิน) Bottom Sheet Modal -->
+<div id="settle-sheet-backdrop" class="bottom-sheet-backdrop" onclick="closeSettleSheet()"></div>
+<div id="settle-sheet" class="bottom-sheet">
+  <div class="bottom-sheet-handle" onclick="closeSettleSheet()"></div>
+  <div style="margin-bottom:20px;">
+    <h3 style="font-size:20px; font-weight:700; color:var(--text-primary);">🤝 เคลียร์ยอดค้างชำระ</h3>
+    <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">กลุ่ม IT Department</p>
+  </div>
+  
+  <div class="form-group" style="margin-bottom: 16px;">
+    <label class="form-label">เลือกคนที่ต้องการโอนเงินเคลียร์</label>
+    <select class="form-input" id="settle-receiver-select" onchange="onSettleReceiverChange()">
+      <!-- Dynamic options -->
+    </select>
+  </div>
+
+  <div class="card" style="margin-bottom:20px; padding:16px;">
+    <div style="font-size:14px; color:var(--text-secondary); margin-bottom:8px;">ยอดเงินที่คุณต้องโอนเคลียร์</div>
+    <div style="font-size:32px; font-weight:800; color:var(--warning);">฿800.00</div>
+    <div style="font-size:13px; color:var(--text-muted); margin-top:6px;">โอนให้: <span style="color:var(--text-primary); font-weight:600;">พีท (@pete)</span></div>
+  </div>
+
+  <div class="card" style="text-align:center; padding: 20px; margin-bottom:20px;">
+    <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:12px;">PromptPay QR สำหรับโอนให้พีท</div>
+    <div style="width:160px; height:160px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; border: 8px solid #fff;">
+      <div style="width:100%; height:100%; background: repeating-conic-gradient(from 15deg, #0d1b2a 0% 25%, #fff 0% 50%) 50% / 15px 15px;"></div>
+    </div>
+    <p style="font-size:12px; color:var(--text-muted);">PromptPay: 089-765-4321 (พีท ณัฐพล)</p>
+  </div>
+
+  <div style="display:flex; gap:8px;">
+    <button class="btn btn-primary" style="flex:1;" onclick="submitSettlement()">ฉันโอนเงินแล้ว ยืนยันการเคลียร์</button>
+    <button class="btn btn-ghost" onclick="closeSettleSheet()">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- PAGE: LOGIN                                -->
+<!-- ========================================== -->
+<div id="page-login" class="auth-page page active">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">P</div>
+      <div class="auth-logo-text">PayNaiDee</div>
+    </div>
+    <h1 class="auth-title">ยินดีต้อนรับกลับ</h1>
+    <p class="auth-subtitle">เข้าสู่ระบบเพื่อจัดการค่าใช้จ่ายกับเพื่อนๆ</p>
+    <div class="form-group">
+      <label class="form-label">ชื่อผู้ใช้</label>
+      <input class="form-input" type="text" placeholder="username" id="login-username" value="somchai">
+    </div>
+    <div class="form-group">
+      <label class="form-label">รหัสผ่าน</label>
+      <input class="form-input" type="password" placeholder="••••••••" id="login-password" value="password">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()" id="btn-login">เข้าสู่ระบบ</button>
+    <div class="auth-divider">หรือ</div>
+    <button class="btn btn-ghost" style="width:100%;" onclick="navigateTo('register')">สมัครสมาชิก</button>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- PAGE: REGISTER                             -->
+<!-- ========================================== -->
+<div id="page-register" class="auth-page page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">P</div>
+      <div class="auth-logo-text">PayNaiDee</div>
+    </div>
+    <h1 class="auth-title">สร้างบัญชีใหม่</h1>
+    <p class="auth-subtitle">เริ่มแชร์ค่าใช้จ่ายกับเพื่อนๆ ได้เลย</p>
+    <div class="form-group">
+      <label class="form-label">ชื่อผู้ใช้</label>
+      <input class="form-input" type="text" placeholder="username" id="reg-username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">อีเมล</label>
+      <input class="form-input" type="email" placeholder="you@example.com" id="reg-email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">รหัสผ่าน</label>
+      <input class="form-input" type="password" placeholder="อย่างน้อย 6 ตัวอักษร" id="reg-password">
+    </div>
+    <button class="btn btn-primary" onclick="doRegister()" id="btn-register">สมัครสมาชิก</button>
+    <p class="auth-link">มีบัญชีอยู่แล้ว? <a href="#" onclick="navigateTo('login')">เข้าสู่ระบบ</a></p>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- APP SHELL                                  -->
+<!-- ========================================== -->
+<div id="app-shell" class="app-layout" style="display:none;">
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">P</div>
+      <span class="sidebar-logo-text">PayNaiDee</span>
+    </div>
+    <div class="sidebar-nav">
+      <a class="sidebar-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+        <span class="sidebar-item-icon">🏠</span>
+        <span class="sidebar-item-text">หน้าหลัก</span>
+      </a>
+      <a class="sidebar-item" data-page="groups" onclick="navigateTo('groups')">
+        <span class="sidebar-item-icon">👥</span>
+        <span class="sidebar-item-text">กลุ่ม</span>
+      </a>
+      <a class="sidebar-item" data-page="friends" onclick="navigateTo('friends')">
+        <span class="sidebar-item-icon">💛</span>
+        <span class="sidebar-item-text">เพื่อน</span>
+        <span class="sidebar-badge" id="badge-friend-requests">3</span>
+      </a>
+      <a class="sidebar-item" data-page="profile" onclick="navigateTo('profile')">
+        <span class="sidebar-item-icon">⚙️</span>
+        <span class="sidebar-item-text">โปรไฟล์</span>
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="navigateTo('profile')">
+        <div class="sidebar-avatar">สม</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name user-display-name">สมชาย</div>
+          <div class="sidebar-user-role">@somchai</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <nav class="bottom-bar">
+    <div class="bottom-bar-inner">
+      <a class="bottom-tab active" data-page="dashboard" onclick="navigateTo('dashboard')">
+        <span class="bottom-tab-icon">🏠</span>
+        <span class="bottom-tab-label">หน้าหลัก</span>
+      </a>
+      <a class="bottom-tab" data-page="groups" onclick="navigateTo('groups')">
+        <span class="bottom-tab-icon">👥</span>
+        <span class="bottom-tab-label">กลุ่ม</span>
+      </a>
+      <div class="bottom-tab-fab" onclick="navigateTo('bill-new')">＋</div>
+      <a class="bottom-tab" data-page="friends" onclick="navigateTo('friends')">
+        <span class="bottom-tab-icon">💛</span>
+        <span class="bottom-tab-label">เพื่อน</span>
+      </a>
+      <a class="bottom-tab" data-page="profile" onclick="navigateTo('profile')">
+        <span class="bottom-tab-icon">👤</span>
+        <span class="bottom-tab-label">โปรไฟล์</span>
+      </a>
+    </div>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- ====== DASHBOARD PAGE ====== -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">สวัสดี, <span class="user-display-name">สมชาย</span> 👋</h1>
+          <p class="page-subtitle">สรุปค่าใช้จ่ายของคุณในเดือนนี้</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="navigateTo('bill-new')">＋ สร้างบิล</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card-full purple animate-slide">
+          <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+            <div class="emoji-icon-box purple">💰</div>
+            <div>
+              <div id="dashboard-total-owe" class="stat-value">฿2,450</div>
+              <div class="stat-label">ค้างจ่ายทั้งหมด</div>
+              <div id="dashboard-total-owe-desc" class="stat-change down">↑ 3 รายการ</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card-full green animate-slide">
+          <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+            <div class="emoji-icon-box green">✓</div>
+            <div>
+              <div id="dashboard-total-paid" class="stat-value">฿8,750</div>
+              <div class="stat-label">จ่ายแล้วเดือนนี้</div>
+              <div class="stat-change up">↑ 12% จากเดือนก่อน</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card amber animate-slide">
+          <div class="stat-label">กลุ่มที่ร่วมอยู่</div>
+          <div class="stat-value" style="margin-top: 8px;">5 <span style="font-size:14px; font-weight:500; color:var(--text-secondary)">กลุ่ม</span></div>
+        </div>
+        <div class="stat-card pink animate-slide">
+          <div class="stat-label">บิลทั้งหมด</div>
+          <div id="dashboard-total-bills" class="stat-value" style="margin-top: 8px;">23 <span style="font-size:14px; font-weight:500; color:var(--text-secondary)">บิล</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span>บิลที่ค้างจ่าย (คลิกเพื่อดูแผ่นสรุป)</span>
+        <span class="section-link" onclick="navigateTo('groups')">ดูทั้งหมด →</span>
+      </div>
+      
+      <div id="dashboard-pending-bills" class="card" style="margin-bottom:20px; padding: 6px 0;">
+        <div class="list-item" onclick="openBillSheet('พิซซ่ากลุ่ม IT', '฿350.00', 'IT Department', 'pending', '3/5 คนจ่ายแล้ว (60%)', 60)">
+          <div class="list-content-left">
+            <div class="emoji-icon-box purple">🍕</div>
+            <div class="list-info">
+              <div class="list-name">พิซซ่ากลุ่ม IT</div>
+              <div class="list-desc">กลุ่ม IT Department · 5 คน</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount" style="color:#fbbf24;">฿350.00</div>
+            <div class="list-time"><span class="badge badge-pending">รอจ่าย</span></div>
+          </div>
+        </div>
+        <div class="list-item" onclick="openBillSheet('ก๋วยเตี๋ยวเรือ', '฿180.00', 'University Friends', 'pending', '2/4 คนจ่ายแล้ว (50%)', 50)">
+          <div class="list-content-left">
+            <div class="emoji-icon-box pink">🍜</div>
+            <div class="list-info">
+              <div class="list-name">ก๋วยเตี๋ยวเรือ</div>
+              <div class="list-desc">กลุ่ม University Friends · 4 คน</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount" style="color:#fbbf24;">฿180.00</div>
+            <div class="list-time"><span class="badge badge-pending">รอจ่าย</span></div>
+          </div>
+        </div>
+        <div class="list-item" onclick="openBillSheet('ค่าตั๋วหนัง', '฿280.00', 'Weekend Gang', 'pending', '5/6 คนจ่ายแล้ว (83%)', 83)">
+          <div class="list-content-left">
+            <div class="emoji-icon-box green">🎬</div>
+            <div class="list-info">
+              <div class="list-name">ค่าตั๋วหนัง</div>
+              <div class="list-desc">กลุ่ม Weekend Gang · 6 คน</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount" style="color:#fbbf24;">฿280.00</div>
+            <div class="list-time"><span class="badge badge-pending">รอจ่าย</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span>กิจกรรมล่าสุด</span>
+      </div>
+      <div class="card" style="padding: 12px 0;">
+        <div class="list-item" style="cursor: default;">
+          <div class="list-content-left" style="align-items: flex-start;">
+            <div class="emoji-icon-box green" style="width: 36px; height: 36px;">✓</div>
+            <div class="list-info">
+              <div class="activity-row">
+                <div class="list-name"><span style="font-weight:700; color:var(--text-primary);">น้ำหวาน</span> จ่ายแล้ว <span style="color:var(--success); font-weight:700;">฿350</span></div>
+                <span class="activity-time-tag">2 นาทีที่แล้ว</span>
+              </div>
+              <div class="list-desc" style="margin-top: 4px;">พิซซ่ากลุ่ม IT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== GROUPS LIST PAGE ====== -->
+    <div id="page-groups" class="page">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">กลุ่มของฉัน</h1>
+          <p id="groups-count-desc" class="page-subtitle">5 กลุ่ม</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showCreateGroupPrompt()">＋ สร้างกลุ่ม</button>
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" placeholder="ค้นหากลุ่ม..." id="search-groups-input" oninput="filterGroupsList()">
+      </div>
+
+      <div id="groups-list-container" class="card" style="padding: 6px 0;">
+        <div class="list-item group-list-card" onclick="navigateToGroup('it_department')" data-name="it department">
+          <div class="list-content-left">
+            <div class="emoji-icon-box purple">👥</div>
+            <div class="list-info">
+              <div class="list-name font-bold">IT Department</div>
+              <div class="list-desc">8 สมาชิก · 12 บิล</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div id="group-card-it-amount" class="list-amount" style="color:#fbbf24;">฿1,200</div>
+            <div id="group-card-it-status" class="list-time">ค้างจ่าย</div>
+          </div>
+        </div>
+
+        <div class="list-item group-list-card" onclick="navigateToGroup('university_friends')" data-name="university friends">
+          <div class="list-content-left">
+            <div class="emoji-icon-box pink">🎓</div>
+            <div class="list-info">
+              <div class="list-name font-bold">University Friends</div>
+              <div class="list-desc">5 สมาชิก · 8 บิล</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount" style="color:#fbbf24;">฿450</div>
+            <div class="list-time">ค้างจ่าย</div>
+          </div>
+        </div>
+
+        <div class="list-item group-list-card" onclick="navigateToGroup('weekend_gang')" data-name="weekend gang">
+          <div class="list-content-left">
+            <div class="emoji-icon-box green">🏕️</div>
+            <div class="list-info">
+              <div class="list-name font-bold">Weekend Gang</div>
+              <div class="list-desc">6 สมาชิก · 5 บิล</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount list-desc-clear">฿0</div>
+            <div class="list-time">เคลียร์แล้ว</div>
+          </div>
+        </div>
+
+        <div class="list-item group-list-card" onclick="navigateToGroup('roommate')" data-name="roommate">
+          <div class="list-content-left">
+            <div class="emoji-icon-box amber">🏠</div>
+            <div class="list-info">
+              <div class="list-name font-bold">Roommate</div>
+              <div class="list-desc">3 สมาชิก · 15 บิล</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount" style="color:#fbbf24;">฿800</div>
+            <div class="list-time">ค้างจ่าย</div>
+          </div>
+        </div>
+
+        <div class="list-item group-list-card" onclick="navigateToGroup('phuket_trip')" data-name="ทริปเที่ยวภูเก็ต">
+          <div class="list-content-left">
+            <div class="emoji-icon-box cyan">✈️</div>
+            <div class="list-info">
+              <div class="list-name font-bold">ทริปเที่ยวภูเก็ต</div>
+              <div class="list-desc">10 สมาชิก · 20 บิล</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount list-desc-clear">฿0</div>
+            <div class="list-time">เคลียร์แล้ว</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== GROUP DETAIL PAGE (UX/UI REDESIGN) ====== -->
+    <div id="page-group-detail" class="page">
+      <div class="page-back" onclick="navigateTo('groups')">← กลุ่มของฉัน</div>
+      
+      <!-- Group Header -->
+      <div class="page-header" style="margin-bottom: 20px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="emoji-icon-box purple" style="width:52px;height:52px;font-size:22px;border-radius:14px;">IT</div>
+          <div>
+            <h1 id="detail-group-title" class="page-title">IT Department</h1>
+            <p class="page-subtitle">8 สมาชิก · สร้างโดย <span class="user-display-name">สมชาย</span></p>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="navigateTo('group-settings')">⚙️</button>
+      </div>
+
+      <!-- Segment Tabs -->
+      <div class="tabs">
+        <div id="subtab-btn-summary" class="tab active" onclick="switchGroupTab('summary')">📊 สรุป</div>
+        <div id="subtab-btn-bills" class="tab" onclick="switchGroupTab('bills')">🧾 บิล</div>
+        <div id="subtab-btn-chat" class="tab" onclick="switchGroupTab('chat')">💬 แชท</div>
+      </div>
+
+      <!-- Subtab 1: Summary -->
+      <div id="group-tab-summary" class="group-tab-content animate-in">
+        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div class="stat-card purple" style="min-height: 90px; padding: 12px;">
+            <span class="stat-label" style="font-size:12px;">ค่าใช้จ่ายรวม</span>
+            <span class="stat-value" style="font-size:18px; margin-top: 4px;">฿12,500</span>
+          </div>
+          <div class="stat-card amber" style="min-height: 90px; padding: 12px;">
+            <span class="stat-label" style="font-size:12px;">ยอดค้างจ่ายคุณ</span>
+            <span id="detail-summary-owe" class="stat-value" style="font-size:18px; margin-top: 4px; color:#fbbf24;">฿1,200</span>
+          </div>
+          <div class="stat-card green" style="min-height: 90px; padding: 12px;">
+            <span class="stat-label" style="font-size:12px;">คุณจ่ายแล้ว</span>
+            <span class="stat-value" style="font-size:18px; margin-top: 4px;">฿9,300</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-bottom: 24px;">
+          <button class="btn btn-primary" style="flex:1; border-radius: 12px;" onclick="navigateTo('bill-new', currentGroupId)">＋ สร้างบิลใหม่</button>
+          <button id="btn-settle-action" class="btn btn-ghost" style="flex:1; border-radius: 12px; color:#fbbf24; border-color: rgba(245,158,11,0.3);" onclick="openSettleSheet()">🤝 เคลียร์เงิน (Settle Up)</button>
+        </div>
+
+        <!-- Visual Balance Flow Redesign -->
+        <div class="section-title">สรุปการเคลียร์เงินในกลุ่ม (ใครค้างใคร)</div>
+        <div class="balance-flow-card">
+          <div id="balance-row-pete" class="balance-row">
+            <div class="balance-user-info">
+              <div class="balance-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);">พ</div>
+              <div>
+                <div class="list-name">พีท</div>
+                <div class="list-desc">คุณค้างชำระค่าข้าวกลางวันและตั๋วหนัง</div>
+              </div>
+            </div>
+            <span id="balance-tag-pete" class="balance-tag owe">คุณติดเงิน ฿800</span>
+          </div>
+          
+          <div id="balance-row-namwan" class="balance-row">
+            <div class="balance-user-info">
+              <div class="balance-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">น</div>
+              <div>
+                <div class="list-name">น้ำหวาน</div>
+                <div class="list-desc">น้ำหวานค้างชำระค่าพิซซ่าและสเต็ก</div>
+              </div>
+            </div>
+            <span class="balance-tag owed">ค้างคุณ ฿350</span>
+          </div>
+
+          <div class="balance-row">
+            <div class="balance-user-info">
+              <div class="balance-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">ก</div>
+              <div>
+                <div class="list-name">กิ๊ก</div>
+                <div class="list-desc">ยอดเงินเคลียร์เรียบร้อย</div>
+              </div>
+            </div>
+            <span class="balance-tag settled">เคลียร์แล้ว</span>
+          </div>
+        </div>
+
+        <!-- Member Chips -->
+        <div class="section-title">
+          <span>สมาชิกกลุ่ม (8 คน)</span>
+          <span class="section-link" onclick="navigateTo('group-settings')">จัดการ →</span>
+        </div>
+        <div class="member-chips">
+          <div class="member-chip">
+            <div class="member-chip-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);">สม</div>
+            <span class="user-display-name">สมชาย</span>
+            <span class="badge badge-admin">Admin</span>
+          </div>
+          <div class="member-chip">
+            <div class="member-chip-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">น้ำ</div>
+            <span>น้ำหวาน</span>
+          </div>
+          <div class="member-chip">
+            <div class="member-chip-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);">พี</div>
+            <span>พีท</span>
+          </div>
+          <div class="member-chip">
+            <div class="member-chip-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">กิ</div>
+            <span>กิ๊ก</span>
+          </div>
+          <div class="member-chip" style="cursor:pointer;" onclick="navigateTo('group-settings')">
+            <span>+4 คน...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtab 2: Bills -->
+      <div id="group-tab-bills" class="group-tab-content animate-in" style="display:none;">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" placeholder="ค้นหาบิลในกลุ่มนี้..." id="search-group-bills" oninput="filterGroupBills()">
+        </div>
+
+        <div id="group-bills-list" class="card" style="padding: 6px 0;">
+          <div class="list-item group-bill-row" onclick="openBillSheet('พิซซ่ากลุ่ม IT', '฿350.00', 'IT Department', 'pending', '3/5 คนจ่ายแล้ว (60%)', 60)" data-title="พิซซ่ากลุ่ม it">
+            <div class="list-content-left">
+              <div class="emoji-icon-box purple">🍕</div>
+              <div class="list-info">
+                <div class="list-name">พิซซ่ากลุ่ม IT</div>
+                <div class="list-desc">สร้างโดย สมชาย · 5 คน · หารเท่า</div>
+              </div>
+            </div>
+            <div class="list-meta">
+              <div class="list-amount" style="color:#fbbf24;">฿1,750</div>
+              <div class="list-time"><span class="badge badge-pending">3/5 จ่ายแล้ว</span></div>
+            </div>
+          </div>
+
+          <div class="list-item group-bill-row" onclick="openBillSheet('กาแฟยามบ่าย', '฿0.00', 'IT Department', 'settled', '4/4 คนจ่ายแล้ว (100%)', 100)" data-title="กาแฟยามบ่าย">
+            <div class="list-content-left">
+              <div class="emoji-icon-box green">☕</div>
+              <div class="list-info">
+                <div class="list-name">กาแฟยามบ่าย</div>
+                <div class="list-desc">สร้างโดย น้ำหวาน · 4 คน · กำหนดเอง</div>
+              </div>
+            </div>
+            <div class="list-meta">
+              <div class="list-amount list-desc-clear">฿520</div>
+              <div class="list-time"><span class="badge badge-settled">เคลียร์แล้ว</span></div>
+            </div>
+          </div>
+
+          <div class="list-item group-bill-row" onclick="openBillSheet('ข้าวกลางวัน', '฿0.00', 'IT Department', 'settled', '8/8 คนจ่ายแล้ว (100%)', 100)" data-title="ข้าวกลางวัน">
+            <div class="list-content-left">
+              <div class="emoji-icon-box amber">🍜</div>
+              <div class="list-info">
+                <div class="list-name">ข้าวกลางวัน</div>
+                <div class="list-desc">สร้างโดย พีท · 8 คน · หารเท่า</div>
+              </div>
+            </div>
+            <div class="list-meta">
+              <div class="list-amount list-desc-clear">฿960</div>
+              <div class="list-time"><span class="badge badge-settled">เคลียร์แล้ว</span></div>
+            </div>
+          </div>
+
+          <div class="list-item group-bill-row" onclick="openBillSheet('เค้กวันเกิดกิ๊ก', '฿150.00', 'IT Department', 'pending', '4/7 คนจ่ายแล้ว (57%)', 57)" data-title="เค้กวันเกิดกิ๊ก">
+            <div class="list-content-left">
+              <div class="emoji-icon-box pink">🎂</div>
+              <div class="list-info">
+                <div class="list-name">เค้กวันเกิดกิ๊ก</div>
+                <div class="list-desc">สร้างโดย น้ำหวาน · 7 คน · กำหนดเอง</div>
+              </div>
+            </div>
+            <div class="list-meta">
+              <div class="list-amount" style="color:#fbbf24;">฿890</div>
+              <div class="list-time"><span class="badge badge-pending">4/7 จ่ายแล้ว</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtab 3: Chat -->
+      <div id="group-tab-chat" class="group-tab-content animate-in" style="display:none;">
+        <div class="chat-container">
+          <div class="chat-header">
+            <div>
+              <div style="font-weight:600;font-size:15px; color:var(--text-primary);">ห้องแชท IT Department</div>
+              <div style="font-size:11px;color:var(--success); margin-top:2px;">● 5 คนออนไลน์</div>
+            </div>
+          </div>
+          <div id="chat-messages-container" class="chat-messages">
+            <div class="chat-msg">
+              <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">น้ำ</div>
+              <div>
+                <div class="chat-msg-bubble">เย็นนี้ใครไปกินพิซซ่าด้วย? 🍕</div>
+                <div class="chat-msg-time">14:32</div>
+              </div>
+            </div>
+            <div class="chat-msg">
+              <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);">พี</div>
+              <div>
+                <div class="chat-msg-bubble">ไปด้วยครับ สั่ง The Pizza Company ดีมะ</div>
+                <div class="chat-msg-time">14:33</div>
+              </div>
+            </div>
+            <div class="chat-msg sent">
+              <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);">สม</div>
+              <div>
+                <div class="chat-msg-bubble">โอเค สั่ง 3 ถาดเลย ไปคนนึง 350 บาท</div>
+                <div class="chat-msg-time">14:35</div>
+              </div>
+            </div>
+            <div class="chat-msg">
+              <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">กิ</div>
+              <div>
+                <div class="chat-msg-bubble">ได้เลยค่ะ สั่งเผ็ดให้ด้วย 🌶️</div>
+                <div class="chat-msg-time">14:36</div>
+              </div>
+            </div>
+            <div style="text-align:center;margin:8px 0;">
+              <div style="display:inline-block;padding:8px 16px;background:var(--accent-glow);border:1px solid var(--border-accent);border-radius:20px;font-size:12px;color:var(--accent-light);">
+                📝 สมชาย สร้างบิล "พิซซ่ากลุ่ม IT" — ฿1,750 (5 คน)
+              </div>
+            </div>
+            <div class="chat-msg sent">
+              <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);">สม</div>
+              <div>
+                <div class="chat-msg-bubble">สร้างบิลแล้วนะ จ่ายคนละ 350 บาท พร้อม QR 😊</div>
+                <div class="chat-msg-time">14:40</div>
+              </div>
+            </div>
+            <div class="chat-msg">
+              <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">น้ำ</div>
+              <div>
+                <div class="chat-msg-bubble">จ่ายแล้วค่ะ ✅</div>
+                <div class="chat-msg-time">14:42</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-bar">
+            <input class="chat-input" placeholder="พิมพ์ข้อความ..." id="chat-input-field" onkeypress="handleChatEnter(event)">
+            <button class="chat-send" onclick="sendChatMessage()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== CREATE BILL PAGE (UX/UI RESTORATION & CALC) ====== -->
+    <div id="page-bill-new" class="page">
+      <div id="bill-page-back" class="page-back" onclick="navigateTo('group-detail')">← ข้อมูลกลุ่ม</div>
+      <div class="page-header">
+        <h1 class="page-title">สร้างบิลใหม่</h1>
+      </div>
+
+      <div class="card" style="max-width:600px;">
+        <div class="form-group" id="bill-group-select-container">
+          <label class="form-label">กลุ่มที่ต้องการสร้างบิล *</label>
+          <select class="form-input" id="bill-group-select" onchange="onGroupSelectChange()">
+            <option value="it_department">IT Department</option>
+            <option value="university_friends">University Friends</option>
+            <option value="weekend_gang">Weekend Gang</option>
+            <option value="roommate">Roommate</option>
+            <option value="phuket_trip">ทริปเที่ยวภูเก็ต</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อบิล *</label>
+          <input class="form-input" placeholder="เช่น ค่าอาหารเย็น, ค่าพิซซ่า" id="bill-title-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">รายละเอียด</label>
+          <input class="form-input" placeholder="เช่น ร้านอาหารญี่ปุ่น สยามพารากอน" id="bill-desc-input">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label class="form-label">จำนวนเงินรวม (฿) *</label>
+            <input class="form-input" type="number" placeholder="0.00" id="bill-amount-input" oninput="calculateBillSplit()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ค่าบริการ / เซอร์วิสชาร์จ (%)</label>
+            <input class="form-input" type="number" placeholder="0" id="bill-service-input" value="0" oninput="calculateBillSplit()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">วิธีแบ่งจ่าย *</label>
+          <div class="bill-split-toggle">
+            <div id="split-opt-equal" class="split-option active" onclick="setSplitMethod('equal')">÷ หารเท่า</div>
+            <div id="split-opt-custom" class="split-option" onclick="setSplitMethod('custom')">✏️ กำหนดเอง</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Member Splitting List -->
+        <div class="form-group">
+          <label class="form-label">ผู้ร่วมหารและจำนวนเงิน</label>
+          <div id="split-list-container" class="split-list-container">
+            <!-- Dynamic members rows are rendered here via JavaScript -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">เบอร์ PromptPay สำหรับรับเงิน</label>
+          <input class="form-input" placeholder="เช่น 081-234-5678" id="bill-promptpay-input" value="081-234-5678">
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg-primary);border-radius:var(--radius-sm); border: 1px solid var(--border);">
+          <span style="color:var(--text-secondary);font-size:14px;">รวมทั้งหมดที่ต้องการเรียกเก็บ</span>
+          <span id="bill-total-display" style="font-size:24px;font-weight:700;color:var(--accent-light);">฿0.00</span>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="createNewBillSubmit()">สร้างบิล</button>
+      </div>
+    </div>
+
+    <!-- ====== FRIENDS PAGE (UX/UI RESTORATION) ====== -->
+    <div id="page-friends" class="page">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">เพื่อน</h1>
+          <p id="friends-subtitle" class="page-subtitle">12 เพื่อน · 3 คำขอค้างอยู่</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showAddFriendPrompt()">＋ เพิ่มเพื่อน</button>
+      </div>
+
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" placeholder="ค้นหาเพื่อนหรือค้นหาชื่อผู้ใช้..." id="search-friends-input" oninput="filterFriendsList()">
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchFriendsTab('all')">เพื่อนทั้งหมด</div>
+        <div class="tab" onclick="switchFriendsTab('requests')">คำขอเพื่อน <span id="badge-friends-tab-requests" style="background:var(--error);color:#fff;border-radius:50%;padding: 2px 6px;font-size:10px;margin-left:4px;">3</span></div>
+      </div>
+
+      <!-- Friend Requests Container -->
+      <div id="friends-requests-section" style="display:none;">
+        <div class="section-title">คำขอเป็นเพื่อน (3 คน)</div>
+        <div class="card" style="margin-bottom:20px; padding: 6px 0;">
+          <div id="friend-req-vintage" class="list-item friend-request-row">
+            <div class="list-content-left">
+              <div class="emoji-icon-box cyan">วิน</div>
+              <div class="list-info">
+                <div class="list-name">วินเทจ</div>
+                <div class="list-desc">@vintage · ส่งคำขอมาเมื่อ 2 ชม. ที่แล้ว</div>
+              </div>
+            </div>
+            <div class="friend-request-actions" style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" style="padding:6px 14px;font-size:12px; border-radius: 6px;" onclick="respondFriendRequest('vintage', true, 'วินเทจ')">ยอมรับ</button>
+              <button class="btn btn-ghost btn-sm" style="padding:6px 14px;font-size:12px; border-radius: 6px;" onclick="respondFriendRequest('vintage', false, 'วินเทจ')">ปฏิเสธ</button>
+            </div>
+          </div>
+
+          <div id="friend-req-mintra" class="list-item friend-request-row">
+            <div class="list-content-left">
+              <div class="emoji-icon-box purple">มิน</div>
+              <div class="list-info">
+                <div class="list-name">มินตรา</div>
+                <div class="list-desc">@mintra · ส่งคำขอมาเมื่อ 5 ชม. ที่แล้ว</div>
+              </div>
+            </div>
+            <div class="friend-request-actions" style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" style="padding:6px 14px;font-size:12px; border-radius: 6px;" onclick="respondFriendRequest('mintra', true, 'มินตรา')">ยอมรับ</button>
+              <button class="btn btn-ghost btn-sm" style="padding:6px 14px;font-size:12px; border-radius: 6px;" onclick="respondFriendRequest('mintra', false, 'มินตรา')">ปฏิเสธ</button>
+            </div>
+          </div>
+
+          <div id="friend-req-boss_dev" class="list-item friend-request-row">
+            <div class="list-content-left">
+              <div class="emoji-icon-box amber">บอ</div>
+              <div class="list-info">
+                <div class="list-name">บอส</div>
+                <div class="list-desc">@boss_dev · ส่งคำขอเมื่อวานนี้</div>
+              </div>
+            </div>
+            <div class="friend-request-actions" style="display:flex;gap:6px;">
+              <button class="btn btn-primary btn-sm" style="padding:6px 14px;font-size:12px; border-radius: 6px;" onclick="respondFriendRequest('boss_dev', true, 'บอส')">ยอมรับ</button>
+              <button class="btn btn-ghost btn-sm" style="padding:6px 14px;font-size:12px; border-radius: 6px;" onclick="respondFriendRequest('boss_dev', false, 'บอส')">ปฏิเสธ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Friends List -->
+      <div id="friends-list-section">
+        <div class="section-title"><span>เพื่อนทั้งหมด (<span id="friends-count-text">12</span> คน)</span></div>
+        <div id="friends-list-container" class="card" style="padding: 6px 0;">
+          <div class="list-item friend-row" data-name="น้ำหวาน" data-username="namwan">
+            <div class="list-content-left">
+              <div class="emoji-icon-box purple">น้ำ</div>
+              <div class="list-info">
+                <div class="list-name">น้ำหวาน</div>
+                <div class="list-desc">@namwan · 3 กลุ่มร่วมกัน</div>
+              </div>
+            </div>
+            <div style="color:var(--success);font-size:11px; font-weight:600;">● ออนไลน์</div>
+          </div>
+
+          <div class="list-item friend-row" data-name="พีท" data-username="pete">
+            <div class="list-content-left">
+              <div class="emoji-icon-box green">พี</div>
+              <div class="list-info">
+                <div class="list-name">พีท</div>
+                <div class="list-desc">@pete · 2 กลุ่มร่วมกัน</div>
+              </div>
+            </div>
+            <div style="color:var(--success);font-size:11px; font-weight:600;">● ออนไลน์</div>
+          </div>
+
+          <div class="list-item friend-row" data-name="กิ๊ก" data-username="kik">
+            <div class="list-content-left">
+              <div class="emoji-icon-box amber">กิ</div>
+              <div class="list-info">
+                <div class="list-name">กิ๊ก</div>
+                <div class="list-desc">@kik · 2 กลุ่มร่วมกัน</div>
+              </div>
+            </div>
+            <div style="color:var(--text-muted);font-size:11px;">ออฟไลน์</div>
+          </div>
+
+          <div class="list-item friend-row" data-name="เบล" data-username="bell">
+            <div class="list-content-left">
+              <div class="emoji-icon-box pink">เบ</div>
+              <div class="list-info">
+                <div class="list-name">เบล</div>
+                <div class="list-desc">@bell · 1 กลุ่มร่วมกัน</div>
+              </div>
+            </div>
+            <div style="color:var(--text-muted);font-size:11px;">ออฟไลน์</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PROFILE PAGE (UX/UI RESTORATION) ====== -->
+    <div id="page-profile" class="page">
+      <div class="page-header">
+        <h1 class="page-title">โปรไฟล์</h1>
+        <button class="btn btn-ghost btn-sm" onclick="editProfileName()">แก้ไขชื่อ</button>
+      </div>
+
+      <div class="profile-header animate-scale">
+        <div class="profile-avatar-lg">สม</div>
+        <div class="profile-name user-display-name">สมชาย ใจดี</div>
+        <div class="profile-email">@somchai · somchai@email.com</div>
+        <div style="display:flex;justify-content:center;gap:32px;margin-top:20px;">
+          <div style="text-align:center;">
+            <div class="profile-stat-val" style="font-size:20px;font-weight:700;color:var(--text-primary);">5</div>
+            <div style="font-size:11px;color:var(--text-secondary);">กลุ่ม</div>
+          </div>
+          <div style="text-align:center;">
+            <div id="profile-stat-friends" class="profile-stat-val" style="font-size:20px;font-weight:700;color:var(--text-primary);">12</div>
+            <div style="font-size:11px;color:var(--text-secondary);">เพื่อน</div>
+          </div>
+          <div style="text-align:center;">
+            <div id="profile-stat-bills" class="profile-stat-val" style="font-size:20px;font-weight:700;color:var(--text-primary);">23</div>
+            <div style="font-size:11px;color:var(--text-secondary);">บิล</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="section-title" style="margin-bottom:0;">ข้อมูลส่วนตัว</div>
+        <div class="setting-item" onclick="editProfileName()">
+          <div class="setting-left">
+            <span class="setting-icon">👤</span>
+            <div>
+              <div class="setting-text">ชื่อที่แสดง</div>
+              <div id="profile-display-name-sub" style="font-size:12px;color:var(--text-muted);">สมชาย ใจดี</div>
+            </div>
+          </div>
+          <span class="setting-arrow">›</span>
+        </div>
+        <div class="setting-item" onclick="showToast('ไม่สามารถแก้ไขอีเมลหลักได้')">
+          <div class="setting-left">
+            <span class="setting-icon">📧</span>
+            <div>
+              <div class="setting-text">อีเมล</div>
+              <div style="font-size:12px;color:var(--text-muted);">somchai@email.com</div>
+            </div>
+          </div>
+          <span class="setting-arrow">›</span>
+        </div>
+        <div class="setting-item" onclick="editPhoneNumber()">
+          <div class="setting-left">
+            <span class="setting-icon">📱</span>
+            <div>
+              <div class="setting-text">เบอร์โทรศัพท์</div>
+              <div id="profile-phone-sub" style="font-size:12px;color:var(--text-muted);">+66 81-234-5678</div>
+            </div>
+          </div>
+          <span class="setting-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="section-title" style="margin-bottom:0;">การตั้งค่า</div>
+        <div class="setting-item" onclick="toggleLanguage()">
+          <div class="setting-left">
+            <span class="setting-icon">🌐</span>
+            <span class="setting-text">ภาษา</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="language-val" style="font-size:13px;color:var(--text-secondary);">ไทย</span>
+            <span class="setting-arrow">›</span>
+          </div>
+        </div>
+        <div class="setting-item">
+          <div class="setting-left">
+            <span class="setting-icon">🔔</span>
+            <span class="setting-text">การแจ้งเตือน</span>
+          </div>
+          <div class="toggle on" onclick="toggleNotificationSwitch(this)"></div>
+        </div>
+        <div class="setting-item">
+          <div class="setting-left">
+            <span class="setting-icon">🌙</span>
+            <span class="setting-text">โหมดประหยัดพลังงาน (มืดพิเศษ)</span>
+          </div>
+          <div class="toggle" onclick="toggleDarkThemeSwitch(this)"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="setting-item" style="border:none;" onclick="doLogout()">
+          <div class="setting-left">
+            <span class="setting-icon">🚪</span>
+            <span class="setting-text" style="color:var(--error);">ออกจากระบบ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== GROUP SETTINGS PAGE (UX/UI RESTORATION) ====== -->
+    <div id="page-group-settings" class="page">
+      <div class="page-back" onclick="navigateTo('group-detail')">← ข้อมูลกลุ่ม</div>
+      <div class="page-header">
+        <h1 class="page-title">ตั้งค่ากลุ่ม</h1>
+      </div>
+
+      <div class="card" style="max-width:600px;margin-bottom:16px;text-align:center;padding:32px;">
+        <div class="emoji-icon-box purple" style="width:64px;height:64px;font-size:26px;border-radius:16px;margin:0 auto 16px;">IT</div>
+        <div class="form-group" style="text-align:left;">
+          <label class="form-label">ชื่อกลุ่ม</label>
+          <input class="form-input" value="IT Department" id="settings-group-name">
+        </div>
+        <div class="form-group" style="text-align:left;">
+          <label class="form-label">หมวดหมู่กลุ่ม</label>
+          <input class="form-input" value="ที่ทำงาน / โปรเจกต์" id="settings-group-category">
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveGroupSettings()">บันทึกการเปลี่ยนแปลง</button>
+      </div>
+
+      <div class="card" style="max-width:600px;margin-bottom:16px;">
+        <div class="section-title">สมาชิกกลุ่ม (8 คน)</div>
+        <div class="participant-row">
+          <div class="member-chip-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);width:36px;height:36px;font-size:12px;">สม</div>
+          <div class="list-info">
+            <div class="list-name"><span class="user-display-name">สมชาย</span> (คุณ)</div>
+            <div class="list-desc">@somchai</div>
+          </div>
+          <span class="badge badge-admin">Admin</span>
+        </div>
+        
+        <div class="participant-row">
+          <div class="member-chip-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);width:36px;height:36px;font-size:12px;">น้ำ</div>
+          <div class="list-info">
+            <div class="list-name">น้ำหวาน</div>
+            <div class="list-desc">@namwan</div>
+          </div>
+          <div style="display:flex;gap:6px; align-items:center;">
+            <span class="badge badge-member">Member</span>
+            <button class="btn-icon" style="width:28px;height:28px;font-size:12px;" onclick="showMemberActions('namwan', 'น้ำหวาน')">⋮</button>
+          </div>
+        </div>
+
+        <div class="participant-row">
+          <div class="member-chip-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);width:36px;height:36px;font-size:12px;">พี</div>
+          <div class="list-info">
+            <div class="list-name">พีท</div>
+            <div class="list-desc">@pete</div>
+          </div>
+          <div style="display:flex;gap:6px; align-items:center;">
+            <span class="badge badge-member">Member</span>
+            <button class="btn-icon" style="width:28px;height:28px;font-size:12px;" onclick="showMemberActions('pete', 'พีท')">⋮</button>
+          </div>
+        </div>
+
+        <div class="participant-row">
+          <div class="member-chip-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);width:36px;height:36px;font-size:12px;">กิ</div>
+          <div class="list-info">
+            <div class="list-name">กิ๊ก</div>
+            <div class="list-desc">@kik</div>
+          </div>
+          <div style="display:flex;gap:6px; align-items:center;">
+            <span class="badge badge-admin">Admin</span>
+            <button class="btn-icon" style="width:28px;height:28px;font-size:12px;" onclick="showMemberActions('kik', 'กิ๊ก')">⋮</button>
+          </div>
+        </div>
+        
+        <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:12px;" onclick="showAddGroupMemberPrompt()">＋ เชิญสมาชิกใหม่เข้ากลุ่ม</button>
+      </div>
+
+      <div class="card" style="max-width:600px;">
+        <div class="setting-item" style="border:none;" onclick="leaveGroupConfirm()">
+          <div class="setting-left">
+            <span class="setting-icon">🚪</span>
+            <span class="setting-text" style="color:var(--error); font-weight:600;">ออกจากกลุ่มนี้</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========================================== -->
+<!-- SCRIPTS & INTERACTION LOGIC                -->
+<!-- ========================================== -->
+<script>
+// ========== STATE MANAGEMENT ==========
+const authPages = ['login', 'register'];
+const mainNavPages = ['dashboard', 'groups', 'friends', 'profile'];
+let currentSplitMethod = 'equal';
+let activeGroupTab = 'summary';
+
+let appState = {
+  userDisplayName: 'สมชาย ใจดี',
+  phoneNumber: '+66 81-234-5678',
+  language: 'ไทย',
+  friendsCount: 12,
+  friendRequestsCount: 3,
+  oweAmount: 2450,
+  paidAmount: 8750,
+  billsCount: 23,
+  hasPaidItPizza: false,
+  hasSettledPete: false
+};
+
+// ========== TOAST ALERT SYSTEM ==========
+function showToast(message) {
+  const container = document.getElementById('toast-wrapper');
+  const toast = document.createElement('div');
+  toast.className = 'toast-container';
+  toast.innerHTML = `<span>🔔</span> ${message}`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translate(-50%, 20px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
+// ========== AUTHENTICATION FLOW ==========
+function doLogin() {
+  const user = document.getElementById('login-username').value.trim();
+  if(!user) {
+    showToast('กรุณากรอกชื่อผู้ใช้');
+    return;
+  }
+  appState.userDisplayName = user === 'somchai' ? 'สมชาย ใจดี' : user;
+  updateUIVariant();
+  navigateTo('dashboard');
+  showToast('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ');
+}
+
+function doRegister() {
+  const user = document.getElementById('reg-username').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  if(!user || !email) {
+    showToast('กรุณากรอกข้อมูลให้ครบถ้วน');
+    return;
+  }
+  appState.userDisplayName = user;
+  updateUIVariant();
+  navigateTo('dashboard');
+  showToast('สมัครสมาชิกสำเร็จ!');
+}
+
+function doLogout() {
+  navigateTo('login');
+  showToast('ออกจากระบบเรียบร้อย');
+}
+
+function updateUIVariant() {
+  document.querySelectorAll('.user-display-name').forEach(el => {
+    el.innerText = appState.userDisplayName;
+  });
+  const subName = document.getElementById('profile-display-name-sub');
+  if(subName) subName.innerText = appState.userDisplayName;
+}
+
+// ========== ROUTING & NAVIGATION ==========
+let currentGroupId = 'it_department';
+
+const groupsData = {
+  it_department: {
+    title: 'IT Department',
+    avatar: '👥',
+    membersCount: 8,
+    totalExpenses: '฿12,500',
+    oweExpenses: '฿1,200',
+    paidExpenses: '฿9,300',
+    oweRaw: 1200,
+    paidRaw: 9300,
+    members: [
+      { name: 'สมชาย', avatar: 'สม', role: 'admin' },
+      { name: 'น้ำหวาน', avatar: 'น้ำ' },
+      { name: 'พีท', avatar: 'พี' },
+      { name: 'กิ๊ก', avatar: 'กิ' }
+    ],
+    balances: [
+      { name: 'พีท', desc: 'คุณค้างชำระค่าข้าวกลางวันและตั๋วหนัง', amountText: 'คุณติดเงิน ฿800', type: 'owe', rawVal: 800, username: 'pete' },
+      { name: 'น้ำหวาน', desc: 'น้ำหวานค้างชำระค่าพิซซ่าและสเต็ก', amountText: 'ค้างคุณ ฿350', type: 'owed', rawVal: 350, username: 'namwan' },
+      { name: 'กิ๊ก', desc: 'ยอดเงินเคลียร์เรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' }
+    ],
+    bills: [
+      { title: 'พิซซ่ากลุ่ม IT', amount: '฿1,750', owe: '฿350.00', status: 'pending', percentText: '3/5 คนจ่ายแล้ว (60%)', percentVal: 60, icon: '🍕' },
+      { title: 'กาแฟยามบ่าย', amount: '฿520', owe: '฿0.00', status: 'settled', percentText: '4/4 คนจ่ายแล้ว (100%)', percentVal: 100, icon: '☕' },
+      { title: 'ข้าวกลางวัน', amount: '฿960', owe: '฿0.00', status: 'settled', percentText: '8/8 คนจ่ายแล้ว (100%)', percentVal: 100, icon: '🍜' },
+      { title: 'เค้กวันเกิดกิ๊ก', amount: '฿890', owe: '฿150.00', status: 'pending', percentText: '4/7 คนจ่ายแล้ว (57%)', percentVal: 57, icon: '🎂' }
+    ]
+  },
+  university_friends: {
+    title: 'University Friends',
+    avatar: '🎓',
+    membersCount: 5,
+    totalExpenses: '฿5,600',
+    oweExpenses: '฿450',
+    paidExpenses: '฿2,100',
+    oweRaw: 450,
+    paidRaw: 2100,
+    members: [
+      { name: 'สมชาย', avatar: 'สม', role: 'admin' },
+      { name: 'น้ำหวาน', avatar: 'น้ำ' },
+      { name: 'พีท', avatar: 'พี' },
+      { name: 'เบล', avatar: 'เบ' }
+    ],
+    balances: [
+      { name: 'น้ำหวาน', desc: 'คุณค้างชำระค่าชานมไข่มุก', amountText: 'คุณติดเงิน ฿150', type: 'owe', rawVal: 150, username: 'namwan' },
+      { name: 'พีท', desc: 'คุณค้างชำระค่าข้าวเย็น', amountText: 'คุณติดเงิน ฿300', type: 'owe', rawVal: 300, username: 'pete' },
+      { name: 'เบล', desc: 'ยอดเงินเคลียร์เรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' }
+    ],
+    bills: [
+      { title: 'ก๋วยเตี๋ยวเรือ', amount: '฿720', owe: '฿180.00', status: 'pending', percentText: '2/4 คนจ่ายแล้ว (50%)', percentVal: 50, icon: '🍜' },
+      { title: 'ชานมไข่มุก', amount: '฿450', owe: '฿150.00', status: 'pending', percentText: '1/3 คนจ่ายแล้ว (33%)', percentVal: 33, icon: '🧋' }
+    ]
+  },
+  weekend_gang: {
+    title: 'Weekend Gang',
+    avatar: '🏕️',
+    membersCount: 6,
+    totalExpenses: '฿4,200',
+    oweExpenses: '฿0',
+    paidExpenses: '฿4,200',
+    oweRaw: 0,
+    paidRaw: 4200,
+    members: [
+      { name: 'สมชาย', avatar: 'สม', role: 'admin' },
+      { name: 'น้ำหวาน', avatar: 'น้ำ' },
+      { name: 'พีท', avatar: 'พี' },
+      { name: 'ออม', avatar: 'ออ' }
+    ],
+    balances: [
+      { name: 'น้ำหวาน', desc: 'เคลียร์ยอดเรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' },
+      { name: 'พีท', desc: 'เคลียร์ยอดเรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' }
+    ],
+    bills: [
+      { title: 'ค่าตั๋วหนัง', amount: '฿1,680', owe: '฿0.00', status: 'settled', percentText: '6/6 คนจ่ายแล้ว (100%)', percentVal: 100, icon: '🎬' }
+    ]
+  },
+  roommate: {
+    title: 'Roommate',
+    avatar: '🏠',
+    membersCount: 3,
+    totalExpenses: '฿9,800',
+    oweExpenses: '฿800',
+    paidExpenses: '฿4,600',
+    oweRaw: 800,
+    paidRaw: 4600,
+    members: [
+      { name: 'สมชาย', avatar: 'สม', role: 'admin' },
+      { name: 'กิ๊ก', avatar: 'กิ' },
+      { name: 'บอส', avatar: 'บอ' }
+    ],
+    balances: [
+      { name: 'กิ๊ก', desc: 'คุณค้างชำระค่าเน็ตบ้านและค่าน้ำ', amountText: 'คุณติดเงิน ฿800', type: 'owe', rawVal: 800, username: 'kik' },
+      { name: 'บอส', desc: 'ยอดเงินเคลียร์เรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' }
+    ],
+    bills: [
+      { title: 'ค่าไฟเดือนพฤษภา', amount: '฿2,400', owe: '฿800.00', status: 'pending', percentText: '2/3 คนจ่ายแล้ว (66%)', percentVal: 66, icon: '⚡' }
+    ]
+  },
+  phuket_trip: {
+    title: 'ทริปเที่ยวภูเก็ต',
+    avatar: '✈️',
+    membersCount: 10,
+    totalExpenses: '฿24,000',
+    oweExpenses: '฿0',
+    paidExpenses: '฿24,000',
+    oweRaw: 0,
+    paidRaw: 24000,
+    members: [
+      { name: 'สมชาย', avatar: 'สม', role: 'admin' },
+      { name: 'น้ำหวาน', avatar: 'น้ำ' },
+      { name: 'พีท', avatar: 'พี' },
+      { name: 'กิ๊ก', avatar: 'กิ' },
+      { name: 'วินเทจ', avatar: 'วิ' }
+    ],
+    balances: [
+      { name: 'วินเทจ', desc: 'เคลียร์ยอดเรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' },
+      { name: 'น้ำหวาน', desc: 'เคลียร์ยอดเรียบร้อย', amountText: 'เคลียร์แล้ว', type: 'settled' }
+    ],
+    bills: [
+      { title: 'ค่ารีสอร์ทที่พัก', amount: '฿18,000', owe: '฿0.00', status: 'settled', percentText: '10/10 คนจ่ายแล้ว (100%)', percentVal: 100, icon: '🏨' }
+    ]
+  }
+};
+
+const groupMembersData = {
+  it_department: [
+    { id: 'somchai', name: 'สมชาย', avatar: 'สม' },
+    { id: 'namwan', name: 'น้ำหวาน', avatar: 'น้ำ' },
+    { id: 'pete', name: 'พีท', avatar: 'พี' },
+    { id: 'kik', name: 'กิ๊ก', avatar: 'กิ' }
+  ],
+  university_friends: [
+    { id: 'somchai', name: 'สมชาย', avatar: 'สม' },
+    { id: 'namwan', name: 'น้ำหวาน', avatar: 'น้ำ' },
+    { id: 'pete', name: 'พีท', avatar: 'พี' },
+    { id: 'bell', name: 'เบล', avatar: 'เบ' }
+  ],
+  weekend_gang: [
+    { id: 'somchai', name: 'สมชาย', avatar: 'สม' },
+    { id: 'namwan', name: 'น้ำหวาน', avatar: 'น้ำ' },
+    { id: 'pete', name: 'พีท', avatar: 'พี' },
+    { id: 'aom', name: 'ออม', avatar: 'ออ' }
+  ],
+  roommate: [
+    { id: 'somchai', name: 'สมชาย', avatar: 'สม' },
+    { id: 'kik', name: 'กิ๊ก', avatar: 'กิ' },
+    { id: 'boss', name: 'บอส', avatar: 'บอ' }
+  ],
+  phuket_trip: [
+    { id: 'somchai', name: 'สมชาย', avatar: 'สม' },
+    { id: 'namwan', name: 'น้ำหวาน', avatar: 'น้ำ' },
+    { id: 'pete', name: 'พีท', avatar: 'พี' },
+    { id: 'kik', name: 'กิ๊ก', avatar: 'กิ' },
+    { id: 'vintage', name: 'วินเทจ', avatar: 'วิ' }
+  ]
+};
+
+function navigateToGroup(groupId) {
+  currentGroupId = groupId;
+  const group = groupsData[groupId];
+  if (!group) return;
+  
+  // Set group header details
+  document.getElementById('detail-group-title').innerText = group.title;
+  const headerAvatar = document.querySelector('#page-group-detail .page-header .emoji-icon-box');
+  if (headerAvatar) {
+    headerAvatar.innerText = group.avatar;
+    headerAvatar.className = 'emoji-icon-box purple';
+  }
+  
+  const creatorSub = document.querySelector('#page-group-detail .page-subtitle');
+  if (creatorSub) {
+    creatorSub.innerHTML = `${group.membersCount} สมาชิก · สร้างโดย <span class="user-display-name">${appState.userDisplayName}</span>`;
+  }
+  
+  // Set group stats
+  const cards = document.querySelectorAll('#page-group-detail .stats-grid .stat-card');
+  if (cards.length >= 3) {
+    cards[0].querySelector('.stat-value').innerText = group.totalExpenses;
+    cards[1].querySelector('.stat-value').innerText = group.oweExpenses;
+    cards[2].querySelector('.stat-value').innerText = group.paidExpenses;
+  }
+  
+  // Render members list (chips)
+  const chipsContainer = document.querySelector('#page-group-detail .member-chips');
+  if (chipsContainer) {
+    let chipsHtml = '';
+    group.members.forEach(member => {
+      const isYou = member.name === 'สมชาย';
+      const displayName = isYou ? appState.userDisplayName : member.name;
+      chipsHtml += `
+        <div class="member-chip">
+          <div class="member-chip-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);">${member.avatar}</div>
+          <span>${displayName}</span>
+          ${member.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : ''}
+        </div>
+      `;
+    });
+    if (group.membersCount > group.members.length) {
+      chipsHtml += `
+        <div class="member-chip" style="cursor:pointer;" onclick="navigateTo('group-settings')">
+          <span>+${group.membersCount - group.members.length} คน...</span>
+        </div>
+      `;
+    }
+    chipsContainer.innerHTML = chipsHtml;
+  }
+  
+  // Render balance flow
+  const balanceCard = document.querySelector('#page-group-detail .balance-flow-card');
+  if (balanceCard) {
+    let balanceHtml = '';
+    group.balances.forEach(b => {
+      let badgeClass = 'balance-tag settled';
+      if (b.type === 'owe') badgeClass = 'balance-tag owe';
+      if (b.type === 'owed') badgeClass = 'balance-tag owed';
+      
+      const char = b.name.substring(0, 1);
+      balanceHtml += `
+        <div id="balance-row-${b.username || 'unknown'}" class="balance-row">
+          <div class="balance-user-info">
+            <div class="balance-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">${char}</div>
+            <div>
+              <div class="list-name">${b.name}</div>
+              <div class="list-desc">${b.desc}</div>
+            </div>
+          </div>
+          <span id="balance-tag-${b.username || 'unknown'}" class="balance-tag ${b.type}">${b.amountText}</span>
+        </div>
+      `;
+    });
+    balanceCard.innerHTML = balanceHtml;
+  }
+  
+  // Update settle action button state
+  const settleBtn = document.getElementById('btn-settle-action');
+  if (settleBtn) {
+    if (group.oweRaw === 0) {
+      settleBtn.style.display = 'none';
+    } else {
+      settleBtn.style.display = 'block';
+      settleBtn.innerText = `🤝 เคลียร์เงิน (Settle Up)`;
+    }
+  }
+
+  // Render group bills list
+  const billsContainer = document.getElementById('group-bills-list');
+  if (billsContainer) {
+    let billsHtml = '';
+    group.bills.forEach(bill => {
+      let badgeClass = 'badge badge-pending';
+      let amountStyle = 'color:#fbbf24;';
+      if (bill.status === 'settled') {
+        badgeClass = 'badge badge-settled';
+        amountStyle = 'color:var(--success); font-weight:600;';
+      }
+      
+      billsHtml += `
+        <div class="list-item group-bill-row" onclick="openBillSheet('${bill.title}', '${bill.owe}', '${group.title}', '${bill.status}', '${bill.percentText}', ${bill.percentVal})" data-title="${bill.title.toLowerCase()}">
+          <div class="list-content-left">
+            <div class="emoji-icon-box purple">${bill.icon}</div>
+            <div class="list-info">
+              <div class="list-name">${bill.title}</div>
+              <div class="list-desc">สร้างโดย ${bill.status === 'settled' ? 'น้ำหวาน' : 'สมชาย'} · หารเท่า</div>
+            </div>
+          </div>
+          <div class="list-meta">
+            <div class="list-amount" style="${amountStyle}">${bill.amount}</div>
+            <div class="list-time"><span class="${badgeClass}">${bill.status === 'settled' ? 'เคลียร์แล้ว' : 'รอจ่าย'}</span></div>
+          </div>
+        </div>
+      `;
+    });
+    billsContainer.innerHTML = billsHtml;
+  }
+
+  // Render chat header title
+  const chatHeaderTitle = document.querySelector('#page-group-detail #group-tab-chat .chat-header div div');
+  if (chatHeaderTitle) {
+    chatHeaderTitle.innerText = `ห้องแชท ${group.title}`;
+  }
+
+  navigateTo('group-detail');
+  switchGroupTab('summary');
+}
+
+function navigateTo(pageId, groupParam) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  
+  if (authPages.includes(pageId)) {
+    document.getElementById('app-shell').style.display = 'none';
+    document.getElementById('page-' + pageId).style.display = '';
+    document.getElementById('page-' + pageId).classList.add('active');
+  } else {
+    authPages.forEach(id => {
+      const page = document.getElementById('page-' + id);
+      if(page) page.style.display = 'none';
+    });
+    document.getElementById('app-shell').style.display = 'flex';
+    
+    // Check dynamic aliases for subtabs
+    if (pageId === 'bills') {
+      navigateToGroup(currentGroupId);
+      switchGroupTab('bills');
+      return;
+    }
+    if (pageId === 'chat') {
+      navigateToGroup(currentGroupId);
+      switchGroupTab('chat');
+      return;
+    }
+
+    if (pageId === 'bill-new') {
+      const select = document.getElementById('bill-group-select');
+      const backBtn = document.getElementById('bill-page-back');
+      
+      if (groupParam) {
+        select.value = groupParam;
+        select.disabled = true;
+        
+        const groupTitle = groupsData[groupParam] ? groupsData[groupParam].title : 'กลุ่ม';
+        backBtn.setAttribute('onclick', "navigateToGroup('" + groupParam + "')");
+        backBtn.innerText = "← กลับไปยังกลุ่ม " + groupTitle;
+        renderSplitMembers(groupParam);
+      } else {
+        select.disabled = false;
+        backBtn.setAttribute('onclick', "navigateTo('dashboard')");
+        backBtn.innerText = "← กลับหน้าหลัก";
+        renderSplitMembers(select.value);
+      }
+    }
+
+    const targetPage = document.getElementById('page-' + pageId);
+    if (targetPage) {
+      targetPage.classList.add('active');
+      targetPage.style.animation = 'none';
+      targetPage.offsetHeight; 
+      targetPage.style.animation = 'fadeIn 0.4s ease-out';
+    }
+    
+    const navPage = getNavPage(pageId);
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.page === navPage);
+    });
+    document.querySelectorAll('.bottom-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.page === navPage);
+    });
+  }
+  window.scrollTo(0, 0);
+}
+
+function getNavPage(pageId) {
+  if (mainNavPages.includes(pageId)) return pageId;
+  if (['group-detail', 'group-settings', 'bills', 'chat'].includes(pageId)) return 'groups';
+  return 'dashboard';
+}
+
+// ========== GROUP LOCAL SUBTABS SWITCHER ==========
+function switchGroupTab(tabName) {
+  activeGroupTab = tabName;
+  document.querySelectorAll('.group-tab-content').forEach(c => c.style.display = 'none');
+  
+  const targetContent = document.getElementById('group-tab-' + tabName);
+  if(targetContent) {
+    targetContent.style.display = 'block';
+    targetContent.style.animation = 'none';
+    targetContent.offsetHeight;
+    targetContent.style.animation = 'fadeIn 0.3s ease-out';
+  }
+  
+  document.querySelectorAll('[id^="subtab-btn-"]').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  const activeBtn = document.getElementById('subtab-btn-' + tabName);
+  if(activeBtn) activeBtn.classList.add('active');
+  
+  if(tabName === 'chat') {
+    scrollChatToBottom();
+  }
+}
+
+function scrollChatToBottom() {
+  const container = document.getElementById('chat-messages-container');
+  if(container) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+// ========== BILL BOTTOM SHEET LOGIC ==========
+let activePayingBillTitle = '';
+function openBillSheet(title, amount, group, status = 'pending', percentText = '3/5 คนจ่ายแล้ว (60%)', percentVal = 60) {
+  activePayingBillTitle = title;
+  document.getElementById('sheet-bill-title').innerText = title;
+  document.getElementById('sheet-bill-amount').innerText = amount;
+  document.getElementById('sheet-bill-group').innerText = group;
+  document.getElementById('sheet-bill-percent-text').innerText = percentText;
+  document.getElementById('sheet-bill-progress-bar').style.width = percentVal + '%';
+  
+  const statusEl = document.getElementById('sheet-bill-status');
+  if(status === 'settled') {
+    statusEl.className = 'badge badge-paid';
+    statusEl.innerText = 'เคลียร์แล้ว';
+  } else {
+    statusEl.className = 'badge badge-pending';
+    statusEl.innerText = 'รอจ่าย';
+  }
+
+  document.getElementById('bill-bottom-sheet-backdrop').classList.add('open');
+  document.getElementById('bill-bottom-sheet').classList.add('open');
+}
+
+function closeBillSheet() {
+  document.getElementById('bill-bottom-sheet-backdrop').classList.remove('open');
+  document.getElementById('bill-bottom-sheet').classList.remove('open');
+}
+
+function confirmBillPayment() {
+  closeBillSheet();
+  
+  if (activePayingBillTitle === 'พิซซ่ากลุ่ม IT') {
+    appState.hasPaidItPizza = true;
+    appState.oweAmount -= 350;
+    appState.paidAmount += 350;
+    
+    // Update Dashboard UI
+    document.getElementById('dashboard-total-owe').innerText = '฿' + appState.oweAmount.toLocaleString();
+    document.getElementById('dashboard-total-owe-desc').innerText = '↑ 2 รายการ';
+    document.getElementById('dashboard-total-paid').innerText = '฿' + appState.paidAmount.toLocaleString();
+    
+    // Remove pizza bill item from dashboard
+    const pendingList = document.getElementById('dashboard-pending-bills');
+    if (pendingList && pendingList.children[0]) {
+      pendingList.children[0].remove();
+    }
+    
+    // Update Group detail Summary
+    document.getElementById('detail-summary-owe').innerText = '฿' + appState.oweAmount.toLocaleString();
+    
+    // Update Visual Balance Flow
+    const balanceNamwan = document.getElementById('balance-row-namwan');
+    if(balanceNamwan) {
+      balanceNamwan.querySelector('.list-desc').innerText = 'น้ำหวานค้างชำระค่าสเต็กอย่างเดียว';
+      balanceNamwan.querySelector('.balance-tag').innerText = 'ค้างคุณ ฿0';
+      balanceNamwan.querySelector('.balance-tag').className = 'balance-tag settled';
+    }
+  }
+  
+  showToast(`แจ้งยืนยันการชำระเงินสำหรับ "${activePayingBillTitle}" สำเร็จ!`);
+}
+
+// ========== SETTLE UP SHEETS LOGIC ==========
+function openSettleSheet() {
+  const group = groupsData[currentGroupId];
+  if (!group) return;
+  
+  // Find all debts in balances
+  const debts = group.balances.filter(b => b.type === 'owe');
+  if (debts.length === 0) {
+    showToast('คุณไม่มียอดเงินต้องชำระในกลุ่มนี้!');
+    return;
+  }
+  
+  // Populate the select dropdown
+  const select = document.getElementById('settle-receiver-select');
+  if (select) {
+    let selectHtml = '';
+    debts.forEach((debt, index) => {
+      selectHtml += `<option value="${debt.username}" ${index === 0 ? 'selected' : ''}>${debt.name} (@${debt.username}) - ฿${debt.rawVal.toFixed(2)}</option>`;
+    });
+    select.innerHTML = selectHtml;
+  }
+  
+  // Update UI details
+  onSettleReceiverChange();
+
+  document.getElementById('settle-sheet-backdrop').classList.add('open');
+  document.getElementById('settle-sheet').classList.add('open');
+}
+
+function onSettleReceiverChange() {
+  const group = groupsData[currentGroupId];
+  if (!group) return;
+  
+  const select = document.getElementById('settle-receiver-select');
+  if (!select) return;
+  
+  const targetUsername = select.value;
+  const debt = group.balances.find(b => b.username === targetUsername && b.type === 'owe');
+  if (!debt) return;
+  
+  // Update details
+  const settleAmountEl = document.querySelector('#settle-sheet .card div[style*="font-size:32px"]');
+  if (settleAmountEl) {
+    settleAmountEl.innerText = `฿${debt.rawVal.toFixed(2)}`;
+  }
+  
+  const receiverEl = document.querySelector('#settle-sheet .card div[style*="font-size:13px"] span');
+  if (receiverEl) {
+    receiverEl.innerText = `${debt.name} (@${debt.username || 'user'})`;
+  }
+  
+  const qrSubEl = document.querySelector('#settle-sheet p[style*="font-size:12px"]');
+  if (qrSubEl) {
+    qrSubEl.innerText = `PromptPay: ${debt.username === 'pete' ? '089-765-4321' : (debt.username === 'namwan' ? '081-111-2222' : '081-999-8888')} (${debt.name})`;
+  }
+}
+
+function closeSettleSheet() {
+  document.getElementById('settle-sheet-backdrop').classList.remove('open');
+  document.getElementById('settle-sheet').classList.remove('open');
+}
+
+function submitSettlement() {
+  const group = groupsData[currentGroupId];
+  if (!group) return;
+  
+  const select = document.getElementById('settle-receiver-select');
+  if (!select) return;
+  
+  const targetUsername = select.value;
+  const debtIndex = group.balances.findIndex(b => b.username === targetUsername && b.type === 'owe');
+  if (debtIndex === -1) return;
+  
+  const debt = group.balances[debtIndex];
+  
+  // Clear the debt amount
+  group.oweRaw -= debt.rawVal;
+  group.paidRaw += debt.rawVal;
+  group.oweExpenses = '฿' + group.oweRaw.toLocaleString();
+  group.paidExpenses = '฿' + group.paidRaw.toLocaleString();
+  
+  // Set the balance flow tag to settled
+  debt.type = 'settled';
+  debt.amountText = 'เคลียร์แล้ว';
+  debt.desc = 'ยอดเงินเคลียร์เรียบร้อย';
+  
+  // Subtract from overall appState
+  appState.oweAmount -= debt.rawVal;
+  appState.paidAmount += debt.rawVal;
+  
+  // Update dashboard and detail stats
+  document.getElementById('dashboard-total-owe').innerText = '฿' + appState.oweAmount.toLocaleString();
+  document.getElementById('dashboard-total-paid').innerText = '฿' + appState.paidAmount.toLocaleString();
+  
+  closeSettleSheet();
+  
+  // Reload group details to refresh the screen
+  navigateToGroup(currentGroupId);
+  
+  showToast(`ยืนยันโอนเงินเคลียร์ยอด ฿${debt.rawVal.toFixed(2)} ให้${debt.name}สำเร็จ!`);
+}
+
+// ========== NEW BILL PAGE LOGIC & DYNAMIC CALCS ==========
+function onGroupSelectChange() {
+  const select = document.getElementById('bill-group-select');
+  const val = select.value;
+  renderSplitMembers(val);
+}
+
+function renderSplitMembers(groupId) {
+  const container = document.getElementById('split-list-container');
+  if (!container) return;
+  
+  const members = groupMembersData[groupId] || groupMembersData.it_department;
+  
+  let html = '';
+  members.forEach(member => {
+    const isYou = member.id === 'somchai';
+    const displayName = isYou ? `${appState.userDisplayName} (คุณ)` : member.name;
+    html += `
+      <div class="split-member-row">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="member-chip-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899); width:28px; height:28px;">${member.avatar}</div>
+          <span style="font-size:14px; font-weight:600;">${displayName}</span>
+        </div>
+        <div class="split-input-wrapper">
+          <span>฿</span>
+          <input type="number" id="split-val-${member.id}" class="member-split-input" value="0" oninput="onCustomSplitInput()" ${currentSplitMethod === 'equal' ? 'readonly' : ''}>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+    <div id="calculator-status" class="calculator-validation" style="color:var(--success);">
+      <span>✓</span> ยอดรวมหารแบ่งลงตัวพอดี
+    </div>
+  `;
+  
+  container.innerHTML = html;
+  calculateBillSplit();
+}
+
+function setSplitMethod(method) {
+  currentSplitMethod = method;
+  document.getElementById('split-opt-equal').classList.toggle('active', method === 'equal');
+  document.getElementById('split-opt-custom').classList.toggle('active', method === 'custom');
+  
+  const inputs = document.querySelectorAll('.member-split-input');
+  inputs.forEach(input => {
+    input.readOnly = (method === 'equal');
+  });
+  
+  calculateBillSplit();
+}
+
+function calculateBillSplit() {
+  let amount = parseFloat(document.getElementById('bill-amount-input').value) || 0;
+  const servicePercent = parseFloat(document.getElementById('bill-service-input').value) || 0;
+  
+  if (servicePercent > 0) {
+    amount = amount + (amount * (servicePercent / 100));
+  }
+  
+  document.getElementById('bill-total-display').innerText = '฿' + amount.toFixed(2);
+  
+  const selectGroupId = document.getElementById('bill-group-select').value;
+  const members = groupMembersData[selectGroupId] || groupMembersData.it_department;
+  const numMembers = members.length;
+  
+  if (currentSplitMethod === 'equal') {
+    const splitVal = amount / numMembers;
+    
+    members.forEach(member => {
+      const input = document.getElementById('split-val-' + member.id);
+      if(input) input.value = splitVal.toFixed(2);
+    });
+    
+    const status = document.getElementById('calculator-status');
+    status.style.color = 'var(--success)';
+    status.innerHTML = '<span>✓</span> ยอดรวมหารแบ่งลงตัวพอดี';
+  } else {
+    onCustomSplitInput();
+  }
+}
+
+function onCustomSplitInput() {
+  let amount = parseFloat(document.getElementById('bill-amount-input').value) || 0;
+  const servicePercent = parseFloat(document.getElementById('bill-service-input').value) || 0;
+  if (servicePercent > 0) {
+    amount = amount + (amount * (servicePercent / 100));
+  }
+
+  const selectGroupId = document.getElementById('bill-group-select').value;
+  const members = groupMembersData[selectGroupId] || groupMembersData.it_department;
+  
+  let totalSumInput = 0;
+  members.forEach(member => {
+    const input = document.getElementById('split-val-' + member.id);
+    if(input) totalSumInput += parseFloat(input.value) || 0;
+  });
+  
+  const diff = amount - totalSumInput;
+  const status = document.getElementById('calculator-status');
+  
+  if (Math.abs(diff) < 0.02) {
+    status.style.color = 'var(--success)';
+    status.innerHTML = '<span>✓</span> ยอดรวมหารแบ่งครบพอดี!';
+  } else if (diff > 0) {
+    status.style.color = 'var(--warning)';
+    status.innerHTML = `<span>⚠️</span> ยอดรวมยังขาดอีก ฿${diff.toFixed(2)}`;
+  } else {
+    status.style.color = 'var(--error)';
+    status.innerHTML = `<span>❌</span> ยอดรวมเกินไป ฿${Math.abs(diff).toFixed(2)}`;
+  }
+}
+
+function createNewBillSubmit() {
+  const title = document.getElementById('bill-title-input').value.trim();
+  const rawAmt = parseFloat(document.getElementById('bill-amount-input').value) || 0;
+  if (!title || rawAmt <= 0) {
+    showToast('กรุณากรอกข้อมูลชื่อบิลและจำนวนเงินให้ถูกต้อง');
+    return;
+  }
+  
+  const selectedGroupId = document.getElementById('bill-group-select').value;
+  const group = groupsData[selectedGroupId];
+  if (!group) return;
+  
+  // Add the bill to the group's bills list
+  group.bills.unshift({
+    title: title,
+    amount: '฿' + rawAmt.toLocaleString(),
+    owe: '฿' + (rawAmt / group.members.length).toFixed(2),
+    status: 'pending',
+    percentText: `1/${group.members.length} คนจ่ายแล้ว (${Math.round(100 / group.members.length)}%)`,
+    percentVal: Math.round(100 / group.members.length),
+    icon: '📝'
+  });
+  
+  // Simulate bill creation overall counters
+  appState.billsCount++;
+  document.getElementById('dashboard-total-bills').innerHTML = appState.billsCount + ' <span style="font-size:14px; font-weight:500; color:var(--text-secondary)">บิล</span>';
+  document.getElementById('profile-stat-bills').innerText = appState.billsCount;
+  
+  // Send notification/message to Chat
+  const chatBox = document.getElementById('chat-messages-container');
+  if(chatBox && selectedGroupId === currentGroupId) {
+    const notifyBubble = document.createElement('div');
+    notifyBubble.style.textAlign = 'center';
+    notifyBubble.style.margin = '8px 0';
+    notifyBubble.innerHTML = `
+      <div style="display:inline-block;padding:8px 16px;background:var(--accent-glow);border:1px solid var(--border-accent);border-radius:20px;font-size:12px;color:var(--accent-light);">
+        📝 สมชาย สร้างบิลใหม่ "${title}" — ฿${rawAmt.toLocaleString()} (${group.members.length} คน)
+      </div>
+    `;
+    chatBox.appendChild(notifyBubble);
+  }
+
+  showToast(`สร้างบิล "${title}" สำเร็จ!`);
+  
+  navigateToGroup(selectedGroupId);
+  switchGroupTab('bills');
+  
+  // Reset fields
+  document.getElementById('bill-title-input').value = '';
+  document.getElementById('bill-desc-input').value = '';
+  document.getElementById('bill-amount-input').value = '';
+  document.getElementById('bill-service-input').value = '0';
+  calculateBillSplit();
+}
+
+// ========== CHAT FUNCTIONS ==========
+function handleChatEnter(event) {
+  if (event.key === 'Enter') {
+    sendChatMessage();
+  }
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chat-input-field');
+  const messageText = input.value.trim();
+  if(!messageText) return;
+  
+  const container = document.getElementById('chat-messages-container');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'chat-msg sent';
+  
+  // Current time HH:MM
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  
+  msgDiv.innerHTML = `
+    <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#f472b6,#ec4899);">สม</div>
+    <div>
+      <div class="chat-msg-bubble">${escapeHtml(messageText)}</div>
+      <div class="chat-msg-time">${timeStr}</div>
+    </div>
+  `;
+  
+  container.appendChild(msgDiv);
+  input.value = '';
+  scrollChatToBottom();
+  
+  // Simulated auto-reply from Pete after 1.5 seconds
+  setTimeout(() => {
+    const peteDiv = document.createElement('div');
+    peteDiv.className = 'chat-msg';
+    peteDiv.innerHTML = `
+      <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);">พี</div>
+      <div>
+        <div class="chat-msg-bubble">ได้รับเรื่องแล้วครับ เดี๋ยวตามจ่ายให้นะ! 👍</div>
+        <div class="chat-msg-time">${timeStr}</div>
+      </div>
+    `;
+    container.appendChild(peteDiv);
+    scrollChatToBottom();
+  }, 1500);
+}
+
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// ========== FRIENDS TAB & ACTION SYSTEM ==========
+let activeFriendsTab = 'all';
+function switchFriendsTab(tabName) {
+  activeFriendsTab = tabName;
+  const isRequests = tabName === 'requests';
+  
+  document.getElementById('friends-requests-section').style.display = isRequests ? 'block' : 'none';
+  document.getElementById('friends-list-section').style.display = isRequests ? 'none' : 'block';
+  
+  const tabs = document.querySelectorAll('#page-friends .tabs .tab');
+  if(tabs.length >= 2) {
+    tabs[0].classList.toggle('active', tabName === 'all');
+    tabs[1].classList.toggle('active', tabName === 'requests');
+  }
+}
+
+function respondFriendRequest(username, accept, name) {
+  const rowId = 'friend-req-' + username;
+  const row = document.getElementById(rowId);
+  if(row) row.remove();
+  
+  appState.friendRequestsCount--;
+  document.getElementById('badge-friend-requests').innerText = appState.friendRequestsCount;
+  document.getElementById('badge-friends-tab-requests').innerText = appState.friendRequestsCount;
+  document.getElementById('friends-subtitle').innerText = `${appState.friendsCount} เพื่อน · ${appState.friendRequestsCount} คำขอค้างอยู่`;
+  
+  if (appState.friendRequestsCount === 0) {
+    document.getElementById('badge-friend-requests').style.display = 'none';
+    document.getElementById('badge-friends-tab-requests').style.display = 'none';
+    const container = document.getElementById('friends-requests-section');
+    container.innerHTML = '<div class="section-title">คำขอเป็นเพื่อน (0 คน)</div><div class="card" style="text-align:center; padding: 20px; color: var(--text-muted);">ไม่มีคำขอเป็นเพื่อนค้างอยู่</div>';
+  }
+  
+  if (accept) {
+    appState.friendsCount++;
+    document.getElementById('friends-count-text').innerText = appState.friendsCount;
+    document.getElementById('friends-subtitle').innerText = `${appState.friendsCount} เพื่อน · ${appState.friendRequestsCount} คำขอค้างอยู่`;
+    document.getElementById('profile-stat-friends').innerText = appState.friendsCount;
+    
+    // Add to friends list container
+    const list = document.getElementById('friends-list-container');
+    if (list) {
+      const char = name.substring(0, 1);
+      const newFriend = document.createElement('div');
+      newFriend.className = 'list-item friend-row';
+      newFriend.dataset.name = name;
+      newFriend.dataset.username = username;
+      newFriend.innerHTML = `
+        <div class="list-content-left">
+          <div class="emoji-icon-box purple">${char}</div>
+          <div class="list-info">
+            <div class="list-name">${name}</div>
+            <div class="list-desc">@${username} · 0 กลุ่มร่วมกัน</div>
+          </div>
+        </div>
+        <div style="color:var(--success);font-size:11px; font-weight:600;">● ออนไลน์</div>
+      `;
+      list.insertBefore(newFriend, list.firstChild);
+    }
+    showToast(`ยอมรับคำขอของ "${name}" แล้ว!`);
+  } else {
+    showToast(`ปฏิเสธคำขอของ "${name}" แล้ว`);
+  }
+}
+
+function showAddFriendPrompt() {
+  const username = prompt('กรุณากรอก Username ของเพื่อนที่ต้องการเพิ่ม:');
+  if (username) {
+    showToast(`ส่งคำขอเป็นเพื่อนไปยัง @${username} แล้ว! รอการตอบรับ`);
+  }
+}
+
+// ========== PROFILE MANAGEMENT ==========
+function editProfileName() {
+  const newName = prompt('กรุณากรอกชื่อที่แสดงใหม่:', appState.userDisplayName);
+  if (newName && newName.trim()) {
+    appState.userDisplayName = newName.trim();
+    updateUIVariant();
+    showToast('เปลี่ยนชื่อผู้ใช้งานสำเร็จ!');
+  }
+}
+
+function editPhoneNumber() {
+  const newPhone = prompt('กรุณากรอกเบอร์โทรศัพท์ใหม่:', appState.phoneNumber);
+  if (newPhone && newPhone.trim()) {
+    appState.phoneNumber = newPhone.trim();
+    const phoneSub = document.getElementById('profile-phone-sub');
+    if(phoneSub) phoneSub.innerText = appState.phoneNumber;
+    showToast('แก้ไขเบอร์โทรศัพท์สำเร็จ!');
+  }
+}
+
+function toggleLanguage() {
+  appState.language = appState.language === 'ไทย' ? 'English' : 'ไทย';
+  const langVal = document.getElementById('language-val');
+  if(langVal) langVal.innerText = appState.language;
+  showToast(`เปลี่ยนภาษาแอปเป็น: ${appState.language}`);
+}
+
+// ========== ADDITIONAL APP FUNCTIONALITIES ==========
+function toggleNotificationSwitch(element) {
+  element.classList.toggle('on');
+  const isOn = element.classList.contains('on');
+  showToast(isOn ? 'เปิดการแจ้งเตือนแอปพลิเคชันแล้ว' : 'ปิดเสียงแจ้งเตือนแอปพลิเคชัน');
+}
+
+function toggleDarkThemeSwitch(element) {
+  element.classList.toggle('on');
+  const isOn = element.classList.contains('on');
+  if(isOn) {
+    document.body.classList.add('alt-theme');
+    showToast('เปิดโหมดมืดพิเศษ (ประหยัดพลังงาน)');
+  } else {
+    document.body.classList.remove('alt-theme');
+    showToast('ปิดโหมดมืดพิเศษ');
+  }
+}
+
+function saveGroupSettings() {
+  const newName = document.getElementById('settings-group-name').value.trim();
+  if(!newName) {
+    showToast('กรุณากรอกชื่อกลุ่ม');
+    return;
+  }
+  document.getElementById('detail-group-title').innerText = newName;
+  showToast(`บันทึกข้อมูลกลุ่ม "${newName}" เรียบร้อยแล้ว`);
+  navigateTo('group-detail');
+}
+
+function showMemberActions(username, name) {
+  const action = confirm(`เลือกคำสั่งจัดการสำหรับคุณ ${name} (@${username}):\n\nกด ตกลง (OK) เพื่อแต่งตั้งเป็นผู้ดูแล (Admin)\nกด ยกเลิก (Cancel) เพื่อลบออกจากกลุ่ม`);
+  if (action) {
+    showToast(`แต่งตั้งคุณ "${name}" เป็น Admin สำเร็จ!`);
+  } else {
+    const confirmDelete = confirm(`คุณต้องการลบคุณ ${name} ออกจากกลุ่มจริงหรือไม่?`);
+    if(confirmDelete) {
+      showToast(`ลบคุณ "${name}" ออกจากกลุ่มเรียบร้อย`);
+    }
+  }
+}
+
+function showAddGroupMemberPrompt() {
+  const name = prompt('กรุณากรอก Username หรือ อีเมล สมาชิกที่ต้องการเชิญเข้ากลุ่ม:');
+  if (name) {
+    showToast(`ส่งคำเชิญเข้าร่วมกลุ่มไปยัง "${name}" แล้ว!`);
+  }
+}
+
+function leaveGroupConfirm() {
+  const leave = confirm('คุณแน่ใจหรือไม่ว่าต้องการออกจากกลุ่ม IT Department?\nการออกจากกลุ่มจะไม่ลบประวัติค่าใช้จ่ายเดิม');
+  if (leave) {
+    showToast('คุณได้ออกจากกลุ่ม IT Department เรียบร้อยแล้ว');
+    navigateTo('groups');
+  }
+}
+
+function showCreateGroupPrompt() {
+  const name = prompt('กรุณากรอกชื่อกลุ่มใหม่ที่คุณต้องการสร้าง:');
+  if (name) {
+    showToast(`สร้างกลุ่ม "${name}" สำเร็จ! คุณสามารถเริ่มเชิญเพื่อนและบันทึกค่าใช้จ่ายได้ทันที`);
+  }
+}
+
+// ========== FILTER FUNCTIONS (SEARCH) ==========
+function filterGroupsList() {
+  const query = document.getElementById('search-groups-input').value.toLowerCase();
+  const cards = document.querySelectorAll('.group-list-card');
+  cards.forEach(card => {
+    const name = card.dataset.name || '';
+    if(name.includes(query)) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+function filterGroupBills() {
+  const query = document.getElementById('search-group-bills').value.toLowerCase();
+  const rows = document.querySelectorAll('.group-bill-row');
+  rows.forEach(row => {
+    const title = row.dataset.title || '';
+    if(title.includes(query)) {
+      row.style.display = 'flex';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
+function filterFriendsList() {
+  const query = document.getElementById('search-friends-input').value.toLowerCase();
+  const rows = document.querySelectorAll('.friend-row');
+  rows.forEach(row => {
+    const name = (row.dataset.name || '').toLowerCase();
+    const uname = (row.dataset.username || '').toLowerCase();
+    if(name.includes(query) || uname.includes(query)) {
+      row.style.display = 'flex';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
+// ========== INITIALIZATION ==========
+renderSplitMembers('it_department');
+updateUIVariant();
+</script>
+</body>
+</html>

@@ -7,6 +7,8 @@ import {
   addMember,
   updateMemberRole,
   removeMember,
+  getGroupBalances,
+  settleWithCreditor,
 } from '@/lib/api/groups';
 import type { CreateGroupRequest, UpdateGroupRequest, AddMemberRequest, UpdateMemberRoleRequest } from '@/types/api';
 
@@ -15,6 +17,7 @@ export const groupKeys = {
   all: ['groups'] as const,
   lists: () => [...groupKeys.all, 'list'] as const,
   detail: (id: number) => [...groupKeys.all, 'detail', id] as const,
+  balances: (id: number) => [...groupKeys.all, 'balances', id] as const,
 };
 
 /**
@@ -109,3 +112,32 @@ export function useRemoveMember(groupId: number) {
     },
   });
 }
+
+/**
+ * Hook to fetch group balance entries (who owes whom)
+ */
+export function useGroupBalances(groupId: number) {
+  return useQuery({
+    queryKey: groupKeys.balances(groupId),
+    queryFn: () => getGroupBalances(groupId),
+    enabled: !!groupId,
+  });
+}
+
+/**
+ * Hook to settle outstanding balance with a creditor
+ */
+export function useSettleWithCreditor(groupId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (creditorId: number) => settleWithCreditor(groupId, creditorId),
+    onSuccess: () => {
+      // Invalidate both group details, balances and bills since settling updates balances and bills
+      queryClient.invalidateQueries({ queryKey: groupKeys.balances(groupId) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
+      queryClient.invalidateQueries({ queryKey: ['bills', 'group', groupId] });
+    },
+  });
+}
+

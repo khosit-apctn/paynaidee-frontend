@@ -4,6 +4,8 @@ import { useEffect, useCallback, useRef, useState } from 'react';
 import { useChatStore } from '@/lib/stores/chat-store';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { getWebSocketInstance, type ConnectionState } from './client';
+import { useQueryClient } from '@tanstack/react-query';
+import { chatKeys } from '@/lib/hooks/use-chat';
 import type {
   ChatMessageReceived,
   TypingReceived,
@@ -70,9 +72,17 @@ export function useWebSocket() {
  */
 export function useChatWebSocket(groupId: number | null) {
   const { ws, isConnected } = useWebSocket();
+  const queryClient = useQueryClient();
   const addMessage = useChatStore((state) => state.addMessage);
   const setTyping = useChatStore((state) => state.setTyping);
   const currentUserId = useAuthStore((state) => state.user?.id);
+
+  // Trigger history catch-up on connect/reconnect
+  useEffect(() => {
+    if (isConnected && groupId) {
+      queryClient.invalidateQueries({ queryKey: chatKeys.messages(groupId) });
+    }
+  }, [isConnected, groupId, queryClient]);
 
   // Handle incoming chat messages
   useEffect(() => {

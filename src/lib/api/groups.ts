@@ -9,6 +9,15 @@ import type {
 } from '@/types/api';
 import type { Group } from '@/types/models';
 
+/** Balance entry showing who owes whom in a group */
+export interface BalanceEntry {
+  debtor_id: number;
+  debtor_name: string;
+  creditor_id: number;
+  creditor_name: string;
+  amount: number;
+}
+
 /**
  * Get all groups the current user belongs to
  * @returns List of groups
@@ -85,3 +94,25 @@ export async function removeMember(
 ): Promise<void> {
   await apiClient.delete(`/groups/${groupId}/members/${userId}`);
 }
+
+/**
+ * Get balance summary for a group (who owes whom)
+ * @param groupId - Group ID
+ * @returns List of balance entries (pending debts between members)
+ */
+export async function getGroupBalances(groupId: number): Promise<BalanceEntry[]> {
+  return apiClient.get<BalanceEntry[]>(`/groups/${groupId}/balances`);
+}
+
+/**
+ * Settle outstanding balance with a creditor in a group
+ * @param groupId - Group ID
+ * @param creditorId - Creditor ID
+ */
+export async function settleWithCreditor(
+  groupId: number,
+  creditorId: number
+): Promise<void> {
+  await apiClient.post(`/groups/${groupId}/settle-with/${creditorId}`);
+}
+

@@ -1,5 +1,6 @@
 'use client';
 
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { useGroup } from '@/lib/hooks/use-groups';
@@ -12,9 +13,9 @@ import type { CreateBillInput } from '@/lib/utils/validation';
 import { showSuccessToast, showErrorToast } from '@/lib/stores/ui-store';
 
 interface NewBillPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 /**
@@ -25,8 +26,8 @@ interface NewBillPageProps {
 export default function NewBillPage({ params }: NewBillPageProps) {
     const t = useTranslation();
     const router = useRouter();
-    const groupId = parseInt(params.id);
-
+    const { id } = use(params);
+    const groupId = parseInt(id, 10);
     const { data: group, isLoading: isLoadingGroup, error: groupError } = useGroup(groupId);
     const createBillMutation = useCreateBill(groupId);
 

@@ -1,131 +1,233 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import { useLogout } from '@/lib/hooks/use-auth';
-import { Avatar } from '@/components/ui/avatar';
+import { useFriendRequests } from '@/lib/hooks/use-friends';;
 
 interface NavItem {
     href: string;
     labelKey: string;
-    icon: React.ReactNode;
+    emoji: string;
 }
 
 /**
- * Sidebar Component
- * Desktop/tablet navigation sidebar
- * Hidden on mobile (< md breakpoint)
+ * Sidebar — desktop left navigation
+ * 72px collapsed, expands to 240px on hover (following mockup design).
+ * Nav items: simple icon + text row, NO nested icon boxes — matches mockup .sidebar-item style.
  */
 export function Sidebar() {
     const pathname = usePathname();
     const t = useTranslation();
     const { user } = useAuthStore();
     const { mutate: logout, isPending: isLoggingOut } = useLogout();
+    const { data: requests } = useFriendRequests();
+    const pendingCount = requests?.length ?? 0;
 
     const navItems: NavItem[] = [
-        {
-            href: '/dashboard',
-            labelKey: 'nav.dashboard',
-            icon: (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-            ),
-        },
-        {
-            href: '/groups',
-            labelKey: 'nav.groups',
-            icon: (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-            ),
-        },
-        {
-            href: '/friends',
-            labelKey: 'nav.friends',
-            icon: (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            ),
-        },
-        {
-            href: '/profile',
-            labelKey: 'nav.profile',
-            icon: (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-            ),
-        },
+        { href: '/dashboard', labelKey: 'nav.dashboard', emoji: '🏠' },
+        { href: '/groups',    labelKey: 'nav.groups',    emoji: '👥' },
+        { href: '/friends',   labelKey: 'nav.friends',   emoji: '💛' },
+        { href: '/profile',   labelKey: 'nav.profile',   emoji: '⚙️' },
     ];
 
     const isActive = (href: string): boolean => {
-        if (href === '/dashboard') {
-            return pathname === '/dashboard';
-        }
+        if (href === '/dashboard') return pathname === '/dashboard';
         return pathname.startsWith(href);
     };
 
+    /** ตัวอักษรย่อจาก display_name */
+    const initials = (name?: string | null) => {
+        if (!name) return 'U';
+        const parts = name.trim().split(' ');
+        return parts.length >= 2
+            ? (parts[0][0] + parts[1][0]).toUpperCase()
+            : name.slice(0, 2).toUpperCase();
+    };
+
     return (
-        <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:pt-14">
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto border-r border-border bg-card px-4 py-6">
-                {/* User Info Section */}
-                {user && (
-                    <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                        <Avatar
-                            src={user.avatar}
-                            alt={user.display_name || user.username}
-                            fallback={user.display_name || user.username}
-                            size="md"
-                        />
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">
+        <aside
+            className="hidden md:flex md:flex-col md:fixed md:inset-y-0 md:left-0 md:z-50 overflow-hidden group/sidebar"
+            style={{
+                width: '72px',
+                transition: 'width 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                background: 'rgba(12, 15, 26, 0.97)',
+                backdropFilter: 'blur(20px)',
+                borderRight: '1px solid rgba(255,255,255,0.06)',
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.width = '240px'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.width = '72px'; }}
+        >
+            {/* ── Logo ───────────────────────────────────── */}
+            <div className="flex items-center gap-3 px-4 mt-4 mb-6 overflow-hidden whitespace-nowrap" style={{ minHeight: '44px' }}>
+                {/* Logo icon — fixed size, no shrink */}
+                <div
+                    className="flex items-center justify-center rounded-xl text-white font-extrabold text-lg shadow-md select-none"
+                    style={{
+                        minWidth: '40px',
+                        width: '40px',
+                        height: '40px',
+                        background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                        boxShadow: '0 4px 12px rgba(99,102,241,0.3)',
+                    }}
+                >
+                    P
+                </div>
+                <span
+                    className="text-lg font-bold text-[var(--text-primary)] whitespace-nowrap overflow-hidden"
+                    style={{ opacity: 0, transition: 'opacity 0.2s', maxWidth: 0 }}
+                    ref={(el) => {
+                        if (!el) return;
+                        const parent = el.closest('aside')!;
+                        const show = () => { el.style.opacity = '1'; el.style.maxWidth = '160px'; };
+                        const hide = () => { el.style.opacity = '0'; el.style.maxWidth = '0'; };
+                        parent.addEventListener('mouseenter', show);
+                        parent.addEventListener('mouseleave', hide);
+                    }}
+                >
+                    PayNaiDee
+                </span>
+            </div>
+
+            {/* ── Nav Items ──────────────────────────────── */}
+            <nav className="flex-1 flex flex-col gap-1 px-[10px]">
+                {navItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className="flex items-center gap-3 rounded-lg overflow-hidden whitespace-nowrap relative transition-all duration-200"
+                            style={{
+                                padding: '10px 12px',
+                                color: active ? 'var(--text-accent, #818cf8)' : 'var(--text-secondary)',
+                                background: active ? 'rgba(99,102,241,0.12)' : 'transparent',
+                                textDecoration: 'none',
+                            }}
+                        >
+                            {/* Active indicator bar */}
+                            {active && (
+                                <span
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 rounded-r"
+                                    style={{ width: '3px', height: '20px', background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}
+                                />
+                            )}
+
+                            {/* Emoji icon — fixed size, centered */}
+                            <span
+                                className="flex items-center justify-center text-lg leading-none"
+                                style={{ minWidth: '24px', width: '24px', textAlign: 'center' }}
+                            >
+                                {item.emoji}
+                            </span>
+
+                            {/* Label — hidden when collapsed */}
+                            <span
+                                className="text-sm font-medium flex-1 flex items-center justify-between"
+                                style={{ opacity: 0, transition: 'opacity 0.2s' }}
+                                ref={(el) => {
+                                    if (!el) return;
+                                    const sidebar = el.closest('aside')!;
+                                    const show = () => { el.style.opacity = '1'; };
+                                    const hide = () => { el.style.opacity = '0'; };
+                                    sidebar.addEventListener('mouseenter', show);
+                                    sidebar.addEventListener('mouseleave', hide);
+                                }}
+                            >
+                                {t(item.labelKey)}
+                                {item.href === '/friends' && pendingCount > 0 && (
+                                    <span className="min-w-[18px] h-[18px] bg-rose-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1">
+                                        {pendingCount}
+                                    </span>
+                                )}
+                            </span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            {/* ── Footer: User + Logout ──────────────────── */}
+            {user && (
+                <div className="mt-auto" style={{ padding: '12px 10px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    {/* User info */}
+                    <Link
+                        href="/profile"
+                        className="flex items-center gap-3 rounded-lg overflow-hidden whitespace-nowrap transition-all duration-200 hover:bg-white/[0.04]"
+                        style={{ padding: '8px 12px' }}
+                    >
+                        {/* Avatar circle — initials only, no nested boxes */}
+                        <div
+                            className="flex items-center justify-center rounded-full text-white font-semibold text-sm flex-shrink-0"
+                            style={{
+                                minWidth: '32px',
+                                width: '32px',
+                                height: '32px',
+                                background: 'linear-gradient(135deg, #f472b6, #ec4899)',
+                            }}
+                        >
+                            {initials(user.display_name || user.username)}
+                        </div>
+                        <div
+                            className="flex-1 min-w-0 overflow-hidden"
+                            style={{ opacity: 0, transition: 'opacity 0.2s' }}
+                            ref={(el) => {
+                                if (!el) return;
+                                const sidebar = el.closest('aside')!;
+                                const show = () => { el.style.opacity = '1'; };
+                                const hide = () => { el.style.opacity = '0'; };
+                                sidebar.addEventListener('mouseenter', show);
+                                sidebar.addEventListener('mouseleave', hide);
+                            }}
+                        >
+                            <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
                                 {user.display_name || user.username}
                             </p>
-                            <p className="text-xs text-muted-foreground truncate">
-                                {user.email}
-                            </p>
+                            <p className="text-xs text-[var(--text-muted)] truncate">@{user.username}</p>
                         </div>
-                    </div>
-                )}
+                    </Link>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 space-y-1">
-                    {navItems.map((item) => {
-                        const active = isActive(item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${active
-                                        ? 'bg-primary/10 text-primary'
-                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                    }`}
-                            >
-                                {item.icon}
-                                {t(item.labelKey)}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Logout Button */}
-                <button
-                    onClick={() => logout()}
-                    disabled={isLoggingOut}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-error transition-colors hover:bg-error/10 disabled:opacity-50"
-                >
-                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    {isLoggingOut ? t('common.loading') : t('auth.logout')}
-                </button>
-            </div>
+                    {/* Logout */}
+                    <button
+                        onClick={() => logout()}
+                        disabled={isLoggingOut}
+                        className="flex w-full items-center gap-3 rounded-lg overflow-hidden whitespace-nowrap transition-all duration-200 disabled:opacity-40"
+                        style={{
+                            padding: '8px 12px',
+                            marginTop: '4px',
+                            color: '#fb7185',
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                        }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(251,113,133,0.06)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
+                        <span
+                            className="text-lg leading-none flex items-center justify-center"
+                            style={{ minWidth: '24px', width: '24px', textAlign: 'center' }}
+                        >
+                            🚪
+                        </span>
+                        <span
+                            className="text-sm font-medium"
+                            style={{ opacity: 0, transition: 'opacity 0.2s' }}
+                            ref={(el) => {
+                                if (!el) return;
+                                const sidebar = el.closest('aside')!;
+                                const show = () => { el.style.opacity = '1'; };
+                                const hide = () => { el.style.opacity = '0'; };
+                                sidebar.addEventListener('mouseenter', show);
+                                sidebar.addEventListener('mouseleave', hide);
+                            }}
+                        >
+                            {isLoggingOut ? t('common.loading') : t('auth.logout')}
+                        </span>
+                    </button>
+                </div>
+            )}
         </aside>
     );
 }

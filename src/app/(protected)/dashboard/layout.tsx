@@ -3,14 +3,10 @@
 import type { ReactNode } from 'react';
 
 /**
- * Dashboard Layout Override
- * Bypasses the default protected layout (Header, BottomNav, PageContainer)
- * because the dashboard has its own 4-column full-screen layout.
+ * Dashboard Layout
+ * Bypasses custom full screen sizing so it integrates cleanly with the main Layout Shell
  */
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-    return (
-        <div className="h-screen overflow-hidden">
-            {children}
-        </div>
-    );
+    return children;
 }
+

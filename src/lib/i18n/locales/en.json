@@ -25,6 +25,8 @@
     "optional": "Optional"
   },
   "auth": {
+    "welcomeBack": "Welcome Back",
+    "signInSubtitle": "Sign in to your account",
     "login": "Login",
     "logout": "Logout",
     "register": "Register",

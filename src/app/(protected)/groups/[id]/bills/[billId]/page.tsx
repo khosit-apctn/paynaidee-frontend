@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/lib/i18n';
@@ -17,10 +17,10 @@ import { PageContainer } from '@/components/layout/page-container';
 import { showSuccessToast, showErrorToast } from '@/lib/stores/ui-store';
 
 interface BillDetailPageProps {
-    params: {
+    params: Promise<{
         id: string;
         billId: string;
-    };
+    }>;
 }
 
 /**
@@ -32,8 +32,9 @@ export default function BillDetailPage({ params }: BillDetailPageProps) {
     const t = useTranslation();
     const router = useRouter();
     const queryClient = useQueryClient();
-    const groupId = parseInt(params.id);
-    const billId = parseInt(params.billId);
+    const { id, billId: billIdParam } = use(params);
+    const groupId = parseInt(id, 10);
+    const billId = parseInt(billIdParam, 10);
     const currentUser = useAuthStore((state) => state.user);
 
     const [showQRModal, setShowQRModal] = useState(false);

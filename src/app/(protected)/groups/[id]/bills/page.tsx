@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { useGroupBills } from '@/lib/hooks/use-bills';
@@ -10,9 +10,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { PageContainer } from '@/components/layout/page-container';
 
 interface GroupBillsPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 /**
@@ -23,7 +23,8 @@ interface GroupBillsPageProps {
 export default function GroupBillsPage({ params }: GroupBillsPageProps) {
     const t = useTranslation();
     const router = useRouter();
-    const groupId = parseInt(params.id);
+    const { id } = use(params);
+    const groupId = parseInt(id, 10);
     const [page, setPage] = useState(0);
     const limit = 20;
     const offset = page * limit;

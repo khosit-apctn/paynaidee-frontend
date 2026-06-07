@@ -4,37 +4,69 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, type LoginInput } from '@/lib/utils/validation';
-import { useLogin } from '@/lib/hooks/use-auth';
+import { registerSchema, type RegisterInput } from '@/lib/utils/validation';
+import { useRegister } from '@/lib/hooks/use-auth';
 import { useTranslation } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 /**
- * LoginForm — glassmorphic login card
+ * RegisterForm — glassmorphic register card
  * Deep glass surface with gradient logo, glass inputs, accent gradient submit
  */
-export function LoginForm() {
+export function RegisterForm() {
     const t = useTranslation();
-    const { mutate: login, isPending, error } = useLogin();
+    const { mutate: registerUser, isPending, error } = useRegister();
     const [showPassword, setShowPassword] = useState(false);
 
     const {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<LoginInput>({
-        resolver: zodResolver(loginSchema),
-        defaultValues: { username: '', password: '' },
+    } = useForm<RegisterInput>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            username: '',
+            email: '',
+            password: '',
+            phone_number: '',
+            display_name: '',
+        },
     });
 
-    const onSubmit = (data: LoginInput) => login(data);
+    // Helper to format 10-digit Thai phone number to E.164
+    const formatToE164 = (phone: string): string => {
+        if (!phone) return '';
+        const trimmed = phone.trim();
+        // Check if it's 10 digits starting with '0'
+        if (/^0\d{9}$/.test(trimmed)) {
+            return `+66${trimmed.substring(1)}`;
+        }
+        return trimmed;
+    };
+
+    const onSubmit = (data: RegisterInput) => {
+        // Format phone number to E.164 if provided
+        const payload = {
+            ...data,
+            phone_number: data.phone_number ? formatToE164(data.phone_number) : undefined,
+            display_name: data.display_name || undefined,
+        };
+        registerUser(payload);
+    };
 
     const getApiErrorMessage = (): string | null => {
         if (!error) return null;
         if (error instanceof Error) {
-            if (error.message.includes('invalid_credentials') || error.message.includes('401')) return t('errors.invalidCredentials');
-            if (error.message.includes('network') || error.message.includes('fetch')) return t('errors.networkError');
+            if (error.message.includes('duplicate_username') || error.message.includes('409')) {
+                return t('errors.usernameTaken') || 'Username is already taken';
+            }
+            if (error.message.includes('duplicate_email')) {
+                return t('errors.emailTaken') || 'Email is already registered';
+            }
+            if (error.message.includes('network') || error.message.includes('fetch')) {
+                return t('errors.networkError');
+            }
             return error.message;
         }
         return t('errors.unknown');
@@ -44,7 +76,7 @@ export function LoginForm() {
 
     return (
         <div
-            className="relative rounded-3xl overflow-hidden"
+            className="relative rounded-3xl overflow-hidden animate-in"
             style={{
                 background: 'var(--bg-surface-raised)',
                 backdropFilter: 'blur(32px) saturate(180%)',
@@ -56,7 +88,7 @@ export function LoginForm() {
             {/* Top gradient shimmer line */}
             <div className="absolute top-0 left-8 right-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.50), transparent)' }} />
 
-            {/* Ambient inner glow (top-left corner) */}
+            {/* Ambient inner glow */}
             <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.12) 0%, transparent 70%)' }} />
 
             <div className="relative p-8">
@@ -77,16 +109,16 @@ export function LoginForm() {
                 </div>
 
                 {/* Title */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-6">
                     <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-                        {t('auth.welcomeBack')}
+                        {t('auth.createAccount') || 'Create Account'}
                     </h1>
                     <p className="text-sm text-[var(--text-secondary)] mt-1.5">
-                        {t('auth.signInSubtitle')}
+                        {t('auth.signUpSubtitle') || 'Join PayNaiDee to easily share bills with friends'}
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* API Error */}
                     {apiError && (
                         <div
@@ -107,9 +139,9 @@ export function LoginForm() {
                     {/* Username */}
                     <Input
                         id="username"
-                        label={t('auth.username')}
+                        label={t('auth.username') || 'Username'}
                         type="text"
-                        placeholder={t('auth.username')}
+                        placeholder={t('auth.usernamePlaceholder') || 'Enter username'}
                         autoComplete="username"
                         disabled={isPending}
                         error={errors.username?.message}
@@ -121,13 +153,62 @@ export function LoginForm() {
                         {...register('username')}
                     />
 
+                    {/* Email */}
+                    <Input
+                        id="email"
+                        label={t('auth.email') || 'Email'}
+                        type="email"
+                        placeholder={t('auth.emailPlaceholder') || 'Enter email address'}
+                        autoComplete="email"
+                        disabled={isPending}
+                        error={errors.email?.message}
+                        leftIcon={
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        }
+                        {...register('email')}
+                    />
+
+                    {/* Phone Number */}
+                    <Input
+                        id="phone_number"
+                        label={t('auth.phoneNumber') || 'Phone Number'}
+                        type="tel"
+                        placeholder={t('auth.phoneNumberPlaceholder') || 'e.g. 0812345678'}
+                        disabled={isPending}
+                        error={errors.phone_number?.message}
+                        leftIcon={
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                        }
+                        {...register('phone_number')}
+                    />
+
+                    {/* Display Name */}
+                    <Input
+                        id="display_name"
+                        label={t('auth.displayName') || 'Display Name'}
+                        type="text"
+                        placeholder={t('auth.displayNamePlaceholder') || 'e.g. Somchai'}
+                        disabled={isPending}
+                        error={errors.display_name?.message}
+                        leftIcon={
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        }
+                        {...register('display_name')}
+                    />
+
                     {/* Password */}
                     <Input
                         id="password"
-                        label={t('auth.password')}
+                        label={t('auth.password') || 'Password'}
                         type={showPassword ? 'text' : 'password'}
-                        placeholder={t('auth.password')}
-                        autoComplete="current-password"
+                        placeholder={t('auth.passwordPlaceholder') || 'Choose a password'}
+                        autoComplete="new-password"
                         disabled={isPending}
                         error={errors.password?.message}
                         leftIcon={
@@ -163,20 +244,20 @@ export function LoginForm() {
                         variant="primary"
                         size="lg"
                         loading={isPending}
-                        className="w-full mt-2"
+                        className="w-full mt-4"
                     >
-                        {t('auth.login')}
+                        {t('auth.register') || 'Register'}
                     </Button>
                 </form>
 
-                {/* Register link */}
+                {/* Login link */}
                 <div className="mt-6 text-center text-sm">
-                    <span className="text-[var(--text-muted)]">{t('auth.noAccount')}{' '}</span>
+                    <span className="text-[var(--text-muted)]">{t('auth.hasAccount') || 'Already have an account?'}{' '}</span>
                     <Link
-                        href="/register"
+                        href="/login"
                         className="font-semibold text-[var(--indigo-300)] hover:text-[var(--indigo-400)] transition-colors"
                     >
-                        {t('auth.register')}
+                        {t('auth.login') || 'Login'}
                     </Link>
                 </div>
             </div>
@@ -184,4 +265,4 @@ export function LoginForm() {
     );
 }
 
-export default LoginForm;
+export default RegisterForm;

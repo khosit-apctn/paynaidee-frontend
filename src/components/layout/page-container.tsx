@@ -5,25 +5,18 @@ import { Button } from '@/components/ui/button';
 
 interface PageContainerProps {
     children: React.ReactNode;
-    /** Page title displayed at the top */
     title?: string;
-    /** Description text below the title */
     description?: string;
-    /** Show back button */
     showBack?: boolean;
-    /** Custom back URL (default: browser back) */
     backUrl?: string;
-    /** Header right section for action buttons */
     headerRight?: React.ReactNode;
-    /** Additional CSS classes for the container */
     className?: string;
-    /** Whether to include padding at the bottom for BottomNav */
     withBottomNav?: boolean;
 }
 
 /**
- * PageContainer Component
- * Provides consistent page layout with title, optional back button, and proper spacing
+ * PageContainer — glassmorphic page wrapper
+ * Sticky sub-header with glass blur when title is provided
  */
 export function PageContainer({
     children,
@@ -38,22 +31,23 @@ export function PageContainer({
     const router = useRouter();
 
     const handleBack = () => {
-        if (backUrl) {
-            router.push(backUrl);
-        } else {
-            router.back();
-        }
+        if (backUrl) router.push(backUrl);
+        else router.back();
     };
 
     return (
-        <div
-            className={`flex-1 flex flex-col min-h-0 ${withBottomNav ? 'pb-20 md:pb-0' : ''
-                } ${className}`}
-        >
-            {/* Page Header */}
+        <div className={`flex-1 flex flex-col min-h-0 ${withBottomNav ? 'pb-20 md:pb-0' : ''} ${className}`}>
+            {/* Sticky sub-header */}
             {(title || showBack || headerRight) && (
-                <div className="sticky top-14 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-                    <div className="container mx-auto px-4 py-4">
+                <div
+                    className="sticky top-0 z-40"
+                    style={{
+                        background: 'rgba(10,8,24,0.80)',
+                        backdropFilter: 'blur(16px)',
+                        borderBottom: '1px solid rgba(255,255,255,0.05)',
+                    }}
+                >
+                    <div className="container mx-auto px-4 py-3.5">
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3 min-w-0">
                                 {showBack && (
@@ -61,31 +55,21 @@ export function PageContainer({
                                         variant="ghost"
                                         size="sm"
                                         onClick={handleBack}
-                                        className="shrink-0 -ml-2"
+                                        className="shrink-0 -ml-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                     >
-                                        <svg
-                                            className="h-5 w-5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M15 19l-7-7 7-7"
-                                            />
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                         </svg>
                                     </Button>
                                 )}
                                 <div className="min-w-0">
                                     {title && (
-                                        <h1 className="text-xl font-semibold text-foreground truncate">
+                                        <h1 className="text-base font-bold text-[var(--text-primary)] truncate">
                                             {title}
                                         </h1>
                                     )}
                                     {description && (
-                                        <p className="text-sm text-muted-foreground truncate">
+                                        <p className="text-xs text-[var(--text-muted)] truncate mt-0.5">
                                             {description}
                                         </p>
                                     )}
@@ -101,8 +85,8 @@ export function PageContainer({
                 </div>
             )}
 
-            {/* Page Content */}
-            <div className="flex-1 container mx-auto px-4 py-4">
+            {/* Content */}
+            <div className="flex-1 container mx-auto px-4 py-5">
                 {children}
             </div>
         </div>

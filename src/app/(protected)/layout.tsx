@@ -1,9 +1,9 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Header } from '@/components/layout/header';
+import { Sidebar } from '@/components/layout/sidebar';
 import { BottomNav } from '@/components/layout/bottom-nav';
-import { PageContainer } from '@/components/layout/page-container';
+import { PageTransition } from '@/components/layout/page-transition';
 
 interface ProtectedLayoutProps {
     children: ReactNode;
@@ -11,23 +11,24 @@ interface ProtectedLayoutProps {
 
 /**
  * Protected Layout
- * Wraps all protected routes with Header, BottomNav, and PageContainer
- * This layout is only rendered for authenticated users (middleware handles redirect)
+ * Desktop: Sidebar on left (72px collapsed → 240px on hover)
+ * Mobile: BottomNav fixed at bottom
+ * Page transitions: fade + slide-up on every route change
  */
 export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
     return (
-        <div className="min-h-screen bg-background">
-            {/* Header - visible on all screen sizes */}
-            <Header />
+        <div className="min-h-screen bg-background flex">
+            {/* Sidebar — desktop only */}
+            <Sidebar />
 
-            {/* Main content area with bottom padding for mobile nav */}
-            <main className="pb-20 md:pb-0">
-                <PageContainer>
+            {/* Main content with page transition */}
+            <main className="flex-1 min-h-screen pb-20 md:pb-0 md:pl-[72px]">
+                <PageTransition>
                     {children}
-                </PageContainer>
+                </PageTransition>
             </main>
 
-            {/* Bottom Navigation - visible only on mobile */}
+            {/* Bottom Navigation — mobile only */}
             <BottomNav />
         </div>
     );

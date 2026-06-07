@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getFriends,
+  getPendingFriendRequests,
   sendFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
@@ -11,6 +12,7 @@ import type { SendFriendRequest } from '@/types/api';
 export const friendKeys = {
   all: ['friends'] as const,
   lists: () => [...friendKeys.all, 'list'] as const,
+  requests: () => [...friendKeys.all, 'requests'] as const,
 };
 
 /**
@@ -20,6 +22,16 @@ export function useFriends() {
   return useQuery({
     queryKey: friendKeys.lists(),
     queryFn: getFriends,
+  });
+}
+
+/**
+ * Hook to fetch pending friend requests addressed to the current user
+ */
+export function useFriendRequests() {
+  return useQuery({
+    queryKey: friendKeys.requests(),
+    queryFn: getPendingFriendRequests,
   });
 }
 
@@ -46,7 +58,9 @@ export function useAcceptFriendRequest() {
   return useMutation({
     mutationFn: (friendshipId: number) => acceptFriendRequest(friendshipId),
     onSuccess: () => {
+      // Refresh both friends list and pending requests
       queryClient.invalidateQueries({ queryKey: friendKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: friendKeys.requests() });
     },
   });
 }
@@ -60,7 +74,8 @@ export function useRejectFriendRequest() {
   return useMutation({
     mutationFn: (friendshipId: number) => rejectFriendRequest(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.lists() });
+      // Refresh pending requests after rejecting
+      queryClient.invalidateQueries({ queryKey: friendKeys.requests() });
     },
   });
 }

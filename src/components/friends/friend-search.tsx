@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/lib/i18n';
 import { searchUsers } from '@/lib/api/users';
-import { Card, CardBody } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,9 +154,17 @@ function UserSearchCard({ user, onSendRequest }: UserSearchCardProps) {
     const sendFriendRequest = useSendFriendRequest();
 
     return (
-        <Card>
-            <CardBody className="p-4">
-                <div className="flex items-center gap-3">
+        <div
+            className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg"
+            style={{
+                background: 'var(--bg-surface-raised)',
+                backdropFilter: 'var(--blur-glass)',
+                WebkitBackdropFilter: 'var(--blur-glass)',
+                border: '1px solid var(--border-glass)',
+            }}
+        >
+            <div className="p-4 flex items-center justify-between gap-4 relative">
+                <div className="flex items-center gap-3.5 min-w-0">
                     <Avatar
                         src={user.avatar}
                         alt={user.display_name || user.username}
@@ -165,26 +172,28 @@ function UserSearchCard({ user, onSendRequest }: UserSearchCardProps) {
                         size="md"
                     />
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground truncate">
+                        <h3 className="font-bold text-[var(--text-primary)] truncate">
                             {user.display_name || user.username}
                         </h3>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-[var(--text-secondary)] truncate">
                             @{user.username}
                         </p>
                     </div>
-                    <div className="shrink-0">
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => onSendRequest(user.id)}
-                            loading={sendFriendRequest.isPending}
-                        >
-                            {t('friends.sendRequest')}
-                        </Button>
-                    </div>
                 </div>
-            </CardBody>
-        </Card>
+
+                <div className="shrink-0">
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => onSendRequest(user.id)}
+                        loading={sendFriendRequest.isPending}
+                        className="px-4 py-2 font-bold bg-gradient-to-r from-indigo-500 to-purple-600 border-none shadow-md shadow-indigo-500/20"
+                    >
+                        {t('friends.sendRequest')}
+                    </Button>
+                </div>
+            </div>
+        </div>
     );
 }
 

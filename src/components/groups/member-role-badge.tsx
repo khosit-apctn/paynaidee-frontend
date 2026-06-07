@@ -8,8 +8,7 @@ interface MemberRoleBadgeProps {
 }
 
 /**
- * MemberRoleBadge Component
- * Displays a badge indicating the member's role (Admin or Member)
+ * MemberRoleBadge — glassmorphic role pill
  */
 export function MemberRoleBadge({ role }: MemberRoleBadgeProps) {
     const t = useTranslation();
@@ -17,13 +16,13 @@ export function MemberRoleBadge({ role }: MemberRoleBadgeProps) {
     if (role === 'admin') {
         return (
             <Badge variant="primary">
-                {t('groups.admin')}
+                ⭐ {t('groups.admin')}
             </Badge>
         );
     }
 
     return (
-        <Badge variant="secondary">
+        <Badge variant="default">
             {t('groups.member')}
         </Badge>
     );

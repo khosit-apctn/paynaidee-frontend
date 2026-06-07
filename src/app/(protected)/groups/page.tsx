@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { useGroups } from '@/lib/hooks/use-groups';
 import { GroupCard } from '@/components/groups/group-card';
@@ -17,15 +18,25 @@ import { Skeleton } from '@/components/ui/skeleton';
  */
 export default function GroupsPage() {
     const t = useTranslation();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const { data: groups, isLoading, error } = useGroups();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (searchParams.get('create') === 'true') {
+            setIsCreateModalOpen(true);
+            // Clean up the URL parameter
+            router.replace('/groups');
+        }
+    }, [searchParams, router]);
 
     const handleCreateSuccess = () => {
         setIsCreateModalOpen(false);
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 px-4 py-5">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>

@@ -13,6 +13,14 @@ export async function getFriends(): Promise<User[]> {
 }
 
 /**
+ * Get pending friend requests addressed to the current user
+ * @returns List of pending friendships (sent by others, awaiting acceptance)
+ */
+export async function getPendingFriendRequests(): Promise<Friendship[]> {
+  return apiClient.get<Friendship[]>('/users/friends/requests');
+}
+
+/**
  * Send a friend request to another user
  * @param data - Friend request data (addressee_id)
  * @returns Created friendship
